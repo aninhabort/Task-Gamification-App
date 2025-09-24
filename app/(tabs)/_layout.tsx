@@ -6,6 +6,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: "#ffd33d",
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: "#25292e",
+        },
         tabBarIcon: ({ color, size }) => {
           let iconName: "home-outline" | "gift-outline" | "person-outline" = "home-outline";
           if (route.name === "index") {
