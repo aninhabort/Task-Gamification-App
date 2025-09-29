@@ -1,0 +1,25 @@
+# Nome do seu Workflow. É o que aparecerá na aba "Actions"
+name: Saudacao Simples
+
+# 2. EVENTO: Quando o workflow deve ser executado
+# Este evento 'push' fará o workflow rodar toda vez que você fizer um 'push'
+on:
+  push:
+    branches: [ "main" ] # Especifique o branch principal do seu projeto
+
+# 3. JOBS: Os trabalhos a serem executados (podem ser paralelos)
+jobs:
+  # Nome do seu primeiro job
+  primeiro_job:
+    # 4. RUNNER: O ambiente onde este job será executado
+    runs-on: ubuntu-latest # O runner hospedado mais comum (Linux)
+    
+    # 5. STEPS: As etapas que o job executará sequencialmente
+    steps:
+      # A primeira step é geralmente para buscar o código do repo
+      - name: Checkout do codigo
+        uses: actions/checkout@v4 # 'actions/checkout' é uma Action pré-construída
+
+      # Uma step simples para rodar um comando no ambiente
+      - name: Executar saudacao
+        run: echo "Olá, o GitHub Actions está funcionando neste push!"
