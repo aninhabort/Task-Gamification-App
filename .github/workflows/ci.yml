@@ -1,25 +1,29 @@
 # Nome do seu Workflow. É o que aparecerá na aba "Actions"
-name: Saudacao Simples
+name: CI - Build e Test
 
-# 2. EVENTO: Quando o workflow deve ser executado
-# Este evento 'push' fará o workflow rodar toda vez que você fizer um 'push'
 on:
   push:
-    branches: [ "main" ] # Especifique o branch principal do seu projeto
+    branches: [ "main" ] 
 
-# 3. JOBS: Os trabalhos a serem executados (podem ser paralelos)
 jobs:
-  # Nome do seu primeiro job
-  primeiro_job:
-    # 4. RUNNER: O ambiente onde este job será executado
-    runs-on: ubuntu-latest # O runner hospedado mais comum (Linux)
+  build_e_test:
+    runs-on: ubuntu-latest
     
-    # 5. STEPS: As etapas que o job executará sequencialmente
     steps:
-      # A primeira step é geralmente para buscar o código do repo
       - name: Checkout do codigo
-        uses: actions/checkout@v4 # 'actions/checkout' é uma Action pré-construída
+        uses: actions/checkout@v4 
 
-      # Uma step simples para rodar um comando no ambiente
-      - name: Executar saudacao
-        run: echo "Olá, o GitHub Actions está funcionando neste push!"
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+          
+      - name: Instalar dependências
+        run: npm install 
+        
+      - name: Executar Testes
+        run: npm test 
+        
+      # Esta step só seria necessária para construir o app para iOS ou Android (mais complexo)
+      # - name: Construir o bundle React Native (Exemplo)
+      #   run: npm run build
