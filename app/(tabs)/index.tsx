@@ -13,6 +13,7 @@ import {
 import { SwipeListView } from "react-native-swipe-list-view";
 import TaskCard from "../components/TaskCard";
 import VoucherCard from "../components/VoucherCard";
+import { useUserStatsContext } from "../contexts/UserStatsContext";
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -22,8 +23,13 @@ export default function HomeScreen() {
   const [tasks, setTasks] = React.useState([
     { title: "Estudar React Native", points: 50, type: "study" },
   ]);
+  const { stats, addCompletedTask } = useUserStatsContext();
 
   function handleCompleteTask(idx: number) {
+    const completedTask = tasks[idx];
+    if (completedTask) {
+      addCompletedTask(completedTask.points);
+    }
     setTasks((tasks) => tasks.filter((_, i) => i !== idx));
   }
 
@@ -51,6 +57,9 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.pointsContainer}>
+          <Text style={styles.pointsText}>Points: {stats.totalPoints}</Text>
+        </View>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
@@ -227,7 +236,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },
@@ -375,5 +384,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#25292e",
     marginHorizontal: 8,
+  },
+  pointsContainer: {
+    backgroundColor: "#353a40",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ffd33d",
+  },
+  pointsText: {
+    color: "#ffd33d",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

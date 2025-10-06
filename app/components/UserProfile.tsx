@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useUserStatsContext } from "../contexts/UserStatsContext";
 
 interface UserProfileProps {
   onLogout: () => void;
@@ -18,6 +19,7 @@ interface UserProfileProps {
 export default function UserProfile({ onLogout }: UserProfileProps) {
   const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
   const [loading, setLoading] = useState(false);
+  const { stats, resetStats } = useUserStatsContext();
 
   useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user) => {
@@ -105,17 +107,17 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
 
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{stats.tasksCompleted}</Text>
           <Text style={styles.statLabel}>Tasks Completed</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{stats.totalPoints}</Text>
           <Text style={styles.statLabel}>Total Points</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>0</Text>
+          <Text style={styles.statNumber}>{stats.vouchersRedeemed}</Text>
           <Text style={styles.statLabel}>Vouchers Redeemed</Text>
         </View>
       </View>
@@ -127,6 +129,22 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
 
         <TouchableOpacity style={styles.settingsButton}>
           <Text style={styles.settingsButtonText}>Settings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={() => {
+            Alert.alert(
+              "Reset Stats",
+              "Are you sure you want to reset all your statistics? This action cannot be undone.",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Reset", style: "destructive", onPress: resetStats },
+              ]
+            );
+          }}
+        >
+          <Text style={styles.resetButtonText}>Reset Stats</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -223,6 +241,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 30,
+    width: "80%",
   },
   statCard: {
     backgroundColor: "#353a40",
@@ -267,6 +286,19 @@ const styles = StyleSheet.create({
   },
   settingsButtonText: {
     color: "#ffd33d",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  resetButton: {
+    backgroundColor: "#353a40",
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ff9800",
+  },
+  resetButtonText: {
+    color: "#ff9800",
     fontSize: 16,
     fontWeight: "bold",
   },
