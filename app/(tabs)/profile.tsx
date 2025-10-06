@@ -1,10 +1,10 @@
-import { StyleSheet, View } from 'react-native';
-import Login from '../components/Login';
+import { StyleSheet, View } from "react-native";
+import AuthManager from "../components/AuthManager";
 
 export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Login />
+      <AuthManager />
     </View>
   );
 }
@@ -12,11 +12,11 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#25292e",
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
-    color: '#fff',
+    color: "#fff",
   },
 });

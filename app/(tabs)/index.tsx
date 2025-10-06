@@ -1,32 +1,40 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SwipeListView } from "react-native-swipe-list-view";
 import TaskCard from "../components/TaskCard";
 import VoucherCard from "../components/VoucherCard";
-
-export interface TasksProps {
-  title: string;
-  points: number;
-  type?: string;
-}
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [taskTitle, setTaskTitle] = React.useState("");
   const [urgency, setUrgency] = React.useState("normal");
   const [taskType, setTaskType] = React.useState("study");
-  const [tasks, setTasks] = React.useState<TasksProps[]>([]);
+  const [tasks, setTasks] = React.useState([
+    { title: "Estudar React Native", points: 50, type: "study" },
+  ]);
 
   function handleCompleteTask(idx: number) {
-    setTasks(tasks => tasks.filter((_, i) => i !== idx));
+    setTasks((tasks) => tasks.filter((_, i) => i !== idx));
   }
 
   function calculatePoints(urgency: string) {
     switch (urgency) {
-      case "high": return 100;
-      case "medium": return 50;
-      default: return 20;
+      case "high":
+        return 100;
+      case "medium":
+        return 70;
+      default:
+        return 50;
     }
   }
 
@@ -43,7 +51,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
           <Ionicons name="add-circle" size={40} color="#ffd33d" />
         </TouchableOpacity>
       </View>
@@ -66,54 +77,93 @@ export default function HomeScreen() {
             <Text style={styles.label}>Urgency:</Text>
             <View style={styles.urgencyContainer}>
               <Pressable
-                style={[styles.urgencyButton, urgency === "normal" && { backgroundColor: '#ffd33d' }]}
+                style={[
+                  styles.urgencyButton,
+                  urgency === "normal" && { backgroundColor: "#ffd33d" },
+                ]}
                 onPress={() => setUrgency("normal")}
               >
-                <Text style={[styles.urgencyText, urgency === "normal" && { color: '#25292e' }]}>Normal</Text>
+                <Text
+                  style={[
+                    styles.urgencyText,
+                    urgency === "normal" && { color: "#25292e" },
+                  ]}
+                >
+                  Normal
+                </Text>
               </Pressable>
               <Pressable
-                style={[styles.urgencyButton, urgency === "medium" && { backgroundColor: '#ff9800' }]}
+                style={[
+                  styles.urgencyButton,
+                  urgency === "medium" && { backgroundColor: "#ff9800" },
+                ]}
                 onPress={() => setUrgency("medium")}
               >
-                <Text style={[styles.urgencyText, urgency === "medium" && { color: '#fff' }]}>Medium</Text>
+                <Text
+                  style={[
+                    styles.urgencyText,
+                    urgency === "medium" && { color: "#fff" },
+                  ]}
+                >
+                  Medium
+                </Text>
               </Pressable>
               <Pressable
-                style={[styles.urgencyButton, urgency === "high" && { backgroundColor: '#ff3b30' }]}
+                style={[
+                  styles.urgencyButton,
+                  urgency === "high" && { backgroundColor: "#ff3b30" },
+                ]}
                 onPress={() => setUrgency("high")}
               >
-                <Text style={[styles.urgencyText, urgency === "high" && { color: '#fff' }]}>High</Text>
+                <Text
+                  style={[
+                    styles.urgencyText,
+                    urgency === "high" && { color: "#fff" },
+                  ]}
+                >
+                  High
+                </Text>
               </Pressable>
             </View>
             <Text style={styles.label}>Type:</Text>
             <View style={styles.typeContainer}>
               <Pressable
-                style={[styles.typeButton, taskType === "health" && { backgroundColor: '#4BB543' }]}
+                style={[
+                  styles.typeButton,
+                  taskType === "health" && styles.typeSelected,
+                ]}
                 onPress={() => setTaskType("health")}
               >
-                <Text style={[styles.typeText, taskType === "health" && { color: '#fff' }]}>Health</Text>
+                <Text style={styles.typeText}>Health</Text>
               </Pressable>
               <Pressable
-                style={[styles.typeButton, taskType === "study" && { backgroundColor: '#2196f3' }]}
+                style={[
+                  styles.typeButton,
+                  taskType === "study" && styles.typeSelected,
+                ]}
                 onPress={() => setTaskType("study")}
               >
-                <Text style={[styles.typeText, taskType === "study" && { color: '#fff' }]}>Study</Text>
+                <Text style={styles.typeText}>Study</Text>
               </Pressable>
               <Pressable
-                style={[styles.typeButton, taskType === "work" && { backgroundColor: '#9c27b0' }]}
+                style={[
+                  styles.typeButton,
+                  taskType === "work" && styles.typeSelected,
+                ]}
                 onPress={() => setTaskType("work")}
               >
-                <Text style={[styles.typeText, taskType === "work" && { color: '#fff' }]}>Work</Text>
+                <Text style={styles.typeText}>Work</Text>
               </Pressable>
             </View>
-
-            <View style={styles.saveAndCancelButtonContainer}>
-              <Pressable style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-              <Pressable style={styles.saveButton} onPress={handleAddTask}>
-                <Text style={styles.saveButtonText}>Add</Text>
-              </Pressable>
-            </View>
+            <Pressable style={styles.saveButton} onPress={handleAddTask}>
+              <Text style={styles.saveButtonText}>Add</Text>
+            </Pressable>
+            <Pressable
+              style={styles.cancelButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -121,15 +171,14 @@ export default function HomeScreen() {
         data={tasks}
         keyExtractor={(_, idx) => String(idx)}
         renderItem={({ item }) => (
-          <TaskCard
-            title={item.title}
-            points={item.points}
-            type={item.type}
-          />
+          <TaskCard title={item.title} points={item.points} type={item.type} />
         )}
         renderHiddenItem={({ index }) => (
           <View style={styles.rowBack}>
-            <TouchableOpacity style={styles.completeButton} onPress={() => handleCompleteTask(index)}>
+            <TouchableOpacity
+              style={styles.completeButton}
+              onPress={() => handleCompleteTask(index)}
+            >
               <Text style={styles.completeButtonText}>Concluir</Text>
             </TouchableOpacity>
           </View>
@@ -137,14 +186,31 @@ export default function HomeScreen() {
         rightOpenValue={-100}
         disableRightSwipe
         style={styles.tasksScroll}
-  />
+      />
+      {/* ...existing code... */}
 
-  <View style={styles.vouchersSection}>
+      <View style={styles.vouchersSection}>
         <Text style={styles.text}>Vouchers</Text>
-        <ScrollView horizontal style={styles.vouchersScroll} showsHorizontalScrollIndicator={false}>
-          <VoucherCard title="Discount Voucher" points={100} image="https://via.placeholder.com/150" />
-          <VoucherCard title="Coffee Voucher" points={80} image="https://via.placeholder.com/150/ffd33d/25292e" />
-          <VoucherCard title="Book Voucher" points={120} image="https://via.placeholder.com/150/353a40/ffd33d" />
+        <ScrollView
+          horizontal
+          style={styles.vouchersScroll}
+          showsHorizontalScrollIndicator={false}
+        >
+          <VoucherCard
+            title="Discount Voucher"
+            points={100}
+            image="https://via.placeholder.com/150"
+          />
+          <VoucherCard
+            title="Coffee Voucher"
+            points={80}
+            image="https://via.placeholder.com/150/ffd33d/25292e"
+          />
+          <VoucherCard
+            title="Book Voucher"
+            points={120}
+            image="https://via.placeholder.com/150/353a40/ffd33d"
+          />
         </ScrollView>
       </View>
     </View>
@@ -154,19 +220,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    justifyContent: 'flex-start',
+    backgroundColor: "#25292e",
+    justifyContent: "flex-start",
     paddingTop: 60,
     paddingHorizontal: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     marginBottom: 16,
   },
   text: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
     marginBottom: 24,
   },
@@ -176,143 +242,138 @@ const styles = StyleSheet.create({
   },
   vouchersSection: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     marginBottom: 32,
   },
   vouchersScroll: {
     flexGrow: 0,
   },
   addButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    // Remove any TextStyle or ImageStyle properties if present
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: '#25292e',
+    backgroundColor: "#25292e",
     padding: 24,
     borderRadius: 16,
-    width: '90%',
-    alignItems: 'stretch',
+    width: "90%",
+    alignItems: "stretch",
   },
   modalTitle: {
-    color: '#ffd33d',
+    color: "#ffd33d",
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
-    backgroundColor: '#353a40',
-    color: '#fff',
+    backgroundColor: "#353a40",
+    color: "#fff",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
   },
   label: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginBottom: 8,
   },
   urgencyContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   urgencyButton: {
-    backgroundColor: '#353a40',
+    backgroundColor: "#353a40",
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginHorizontal: 4,
   },
   urgencySelected: {
-    backgroundColor: '#ffd33d',
+    backgroundColor: "#ffd33d",
   },
+  // Removed misplaced TextStyle properties from styles object root
   typeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   typeButton: {
-    backgroundColor: '#353a40',
+    backgroundColor: "#353a40",
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginHorizontal: 4,
   },
   typeSelected: {
-    backgroundColor: '#ffd33d',
+    backgroundColor: "#ffd33d",
   },
   typeText: {
-    color: '#25292e',
-    fontWeight: 'bold',
+    color: "#25292e",
+    fontWeight: "bold",
   },
   rowBack: {
-    alignItems: 'center',
-    backgroundColor: '#4BB543',
+    alignItems: "center",
+    backgroundColor: "#4BB543",
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     paddingRight: 2,
     marginTop: 8,
     borderRadius: 12,
   },
   completeButton: {
-    backgroundColor: '#4BB543',
+    backgroundColor: "#4BB543",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
   completeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
-  saveAndCancelButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
-    gap: 16,
-  },
   saveButton: {
-    backgroundColor: '#ffd33d',
+    backgroundColor: "#ffd33d",
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    width: 100,
+    alignItems: "center",
+    marginBottom: 8,
   },
   saveButtonText: {
-    color: '#25292e',
-    fontWeight: 'bold',
+    color: "#25292e",
+    fontWeight: "bold",
     fontSize: 16,
   },
   cancelButton: {
-    backgroundColor: '#353a40',
+    backgroundColor: "#353a40",
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    width: 100,
+    alignItems: "center",
   },
   cancelButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   button: {
     fontSize: 20,
-    textDecorationLine: 'underline',
-    color: '#fff'
+    textDecorationLine: "underline",
+    color: "#fff",
   },
   urgencyText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#25292e',
+    fontWeight: "bold",
+    color: "#25292e",
     marginHorizontal: 8,
-  }
+  },
 });
