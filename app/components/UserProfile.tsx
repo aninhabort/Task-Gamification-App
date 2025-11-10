@@ -1,16 +1,17 @@
 import { FIREBASE_AUTH } from "@/FirebaseConfig";
-import { signOut } from "firebase/auth";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useUserStatsContext } from "../contexts/UserStatsContext";
+import { useUserStatsContext } from "../../contexts/UserStatsContext";
+import { Task, UserDataService } from "../../services/UserDataService";
 
 interface UserProfileProps {
   onLogout: () => void;
@@ -18,49 +19,47 @@ interface UserProfileProps {
 
 export default function UserProfile({ onLogout }: UserProfileProps) {
   const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
-  const [loading, setLoading] = useState(false);
-  const { stats, resetStats } = useUserStatsContext();
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const { stats } = useUserStatsContext();
+
+  const navigateToSettings = () => {
+    router.push("/(tabs)/settings");
+  };
+
+  const navigateToEditProfile = () => {
+    router.push("/edit-profile");
+  };
+
+  const loadCompletedTasks = async (userId: string) => {
+    try {
+      setLoadingTasks(true);
+      const tasks = await UserDataService.getCompletedTasks(userId);
+      setCompletedTasks(tasks);
+    } catch (error) {
+      console.error('Error loading completed tasks:', error);
+      setCompletedTasks([]);
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user) => {
       setUser(user);
+      if (user) {
+        loadCompletedTasks(user.uid);
+      } else {
+        setCompletedTasks([]);
+        setLoadingTasks(false);
+      }
     });
 
     return unsubscribe;
   }, []);
 
-  const handleLogout = async () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          setLoading(true);
-          try {
-            await signOut(FIREBASE_AUTH);
-            onLogout();
-          } catch (error) {
-            console.error("Logout error:", error);
-            Alert.alert("Error", "Failed to logout. Please try again.");
-          } finally {
-            setLoading(false);
-          }
-        },
-      },
-    ]);
-  };
-
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase();
-  };
-
-  const formatDate = (date: string | null | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString();
   };
 
   if (!user) {
@@ -74,11 +73,16 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
 
   return (
     <View style={styles.container}>
+      {/* Header with settings button */}
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
+        <View style={styles.spacer} />
+        <TouchableOpacity style={styles.settingsIconButton} onPress={navigateToSettings}>
+          <Ionicons name="settings-outline" size={24} color="#ffd33d" />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.profileCard}>
+      {/* Profile Section */}
+      <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
           {user.photoURL ? (
             <Image source={{ uri: user.photoURL }} style={styles.avatar} />
@@ -89,75 +93,69 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
               </Text>
             </View>
           )}
+          <TouchableOpacity style={styles.editProfileButton} onPress={navigateToEditProfile}>
+            <Ionicons name="pencil-outline" size={16} color="#ffd33d" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>
-            {user.displayName || user.email?.split("@")[0] || "User"}
-          </Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <Text style={styles.userDetail}>
-            Member since: {formatDate(user.metadata.creationTime)}
-          </Text>
-          <Text style={styles.userDetail}>
-            Last login: {formatDate(user.metadata.lastSignInTime)}
-          </Text>
-        </View>
+        <Text style={styles.userName}>
+          {user.displayName || user.email?.split("@")[0] || "User"}
+        </Text>
+        <Text style={styles.userHandle}>
+          @{user.email?.split("@")[0] || "user"}
+        </Text>
       </View>
 
+      {/* Stats Cards */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{stats.totalPoints.toLocaleString()}</Text>
+          <Text style={styles.statLabel}>Points</Text>
+        </View>
+
+        <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.tasksCompleted}</Text>
-          <Text style={styles.statLabel}>Tasks Completed</Text>
+          <Text style={styles.statLabel}>Tasks{'\n'}Completed</Text>
         </View>
 
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.totalPoints}</Text>
-          <Text style={styles.statLabel}>Total Points</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.vouchersRedeemed}</Text>
-          <Text style={styles.statLabel}>Vouchers Redeemed</Text>
+          <Text style={styles.statNumber}>89</Text>
+          <Text style={styles.statLabel}>Streak</Text>
         </View>
       </View>
 
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.editProfileButton}>
-          <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.settingsButton}>
-          <Text style={styles.settingsButtonText}>Settings</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={() => {
-            Alert.alert(
-              "Reset Stats",
-              "Are you sure you want to reset all your statistics? This action cannot be undone.",
-              [
-                { text: "Cancel", style: "cancel" },
-                { text: "Reset", style: "destructive", onPress: resetStats },
-              ]
-            );
-          }}
-        >
-          <Text style={styles.resetButtonText}>Reset Stats</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          )}
-        </TouchableOpacity>
+      {/* Task History Section */}
+      <View style={styles.taskHistorySection}>
+        <Text style={styles.sectionTitle}>Task History</Text>
+        
+        {loadingTasks ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#ffd33d" />
+            <Text style={styles.loadingTasksText}>Loading tasks...</Text>
+          </View>
+        ) : completedTasks.length > 0 ? (
+          completedTasks.slice(0, 5).map((task) => (
+            <View key={task.id} style={styles.taskItem}>
+              <View style={styles.taskIcon}>
+                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              </View>
+              <View style={styles.taskContent}>
+                <Text style={styles.taskTitle}>{task.title}</Text>
+                <Text style={styles.taskStatus}>
+                  Completed • {task.points} pts
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyStateContainer}>
+            <Ionicons name="clipboard-outline" size={48} color="#666" />
+            <Text style={styles.emptyStateTitle}>No Tasks Yet</Text>
+            <Text style={styles.emptyStateSubtitle}>
+              Complete some tasks to see your history here
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -167,69 +165,71 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292e",
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingTop: 60,
+    width: "100%",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#ffd33d",
+  spacer: {
+    flex: 1,
   },
-  profileCard: {
+  settingsIconButton: {
+    padding: 8,
+    borderRadius: 20,
     backgroundColor: "#353a40",
-    borderRadius: 16,
-    padding: 24,
+  },
+  profileSection: {
     alignItems: "center",
-    marginBottom: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
   },
   avatarContainer: {
-    marginBottom: 16,
+    position: "relative",
+    marginBottom: 20,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: "#ffd33d",
     justifyContent: "center",
     alignItems: "center",
   },
   avatarText: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#25292e",
   },
-  userInfo: {
-    alignItems: "center",
-  },
   userName: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  userEmail: {
+  userHandle: {
     fontSize: 16,
-    color: "#ffd33d",
-    marginBottom: 12,
+    color: "#888",
+    marginBottom: 40,
   },
-  userDetail: {
-    fontSize: 14,
-    color: "#aaa",
-    marginBottom: 4,
+  editProfileButton: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#353a40",
+    padding: 6,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#25292e",
   },
   loadingText: {
     color: "#fff",
@@ -240,77 +240,91 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 30,
-    width: "80%",
+    marginBottom: 40,
+    paddingHorizontal: 10,
   },
   statCard: {
     backgroundColor: "#353a40",
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: "center",
+    justifyContent: "center",
     flex: 1,
     marginHorizontal: 4,
+    minHeight: 80,
   },
   statNumber: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#ffd33d",
-    marginBottom: 4,
+    color: "#fff",
+    marginBottom: 6,
   },
   statLabel: {
-    fontSize: 12,
-    color: "#aaa",
+    fontSize: 14,
+    color: "#888",
     textAlign: "center",
+    lineHeight: 18,
   },
-  actionButtons: {
+  taskHistorySection: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
+  },
+  taskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#353a40",
+  },
+  taskIcon: {
+    marginRight: 16,
+  },
+  taskContent: {
+    flex: 1,
+  },
+  taskTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  taskStatus: {
+    fontSize: 14,
+    color: "#888",
+  },
+  emptyStateContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#fff",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
     gap: 12,
   },
-  editProfileButton: {
-    backgroundColor: "#ffd33d",
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  editProfileButtonText: {
-    color: "#25292e",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  settingsButton: {
-    backgroundColor: "#353a40",
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ffd33d",
-  },
-  settingsButtonText: {
-    color: "#ffd33d",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  resetButton: {
-    backgroundColor: "#353a40",
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ff9800",
-  },
-  resetButtonText: {
-    color: "#ff9800",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  logoutButton: {
-    backgroundColor: "#ff3b30",
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  logoutButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  loadingTasksText: {
+    fontSize: 14,
+    color: "#888",
   },
 });

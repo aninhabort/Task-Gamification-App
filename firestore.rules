@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // REGRA CORRIGIDA - Permite operações para usuários autenticados
+    
+    // Regra temporária mais simples - permite tudo para usuários autenticados
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // OU use as regras mais específicas abaixo (comentadas por segurança):
+    /*
+    // Regras para usuários - permitir leitura/escrita apenas dos próprios dados
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regras para tasks - permitir operações apenas do próprio usuário
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid) &&
+        (request.resource == null || request.resource.data.userId == request.auth.uid);
+    }
+    
+    // Regras para vouchers resgatados - permitir operações apenas do próprio usuário
+    match /redeemedVouchers/{voucherId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid) &&
+        (request.resource == null || request.resource.data.userId == request.auth.uid);
+    }
+    
+    // Permitir leitura do documento de teste de conexão (sem dados sensíveis)
+    match /test/connection {
+      allow read: if request.auth != null;
+    }
+    */
+  }
+}

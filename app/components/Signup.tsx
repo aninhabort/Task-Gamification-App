@@ -39,7 +39,6 @@ export default function Signup({ onBackToLogin }: SignupProps) {
         email,
         password
       );
-      console.log(response);
       // Account created successfully - AuthManager will handle the navigation
     } catch (error: any) {
       console.error("Signup error:", error);

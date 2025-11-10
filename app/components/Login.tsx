@@ -16,20 +16,41 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const auth = FIREBASE_AUTH;
 
   const signIn = async () => {
+    // Limpar mensagem de erro anterior
+    setErrorMessage("");
+    
+    // Validações básicas
+    if (!email.trim()) {
+      setErrorMessage("Please enter your email address.");
+      return;
+    }
+    
+    if (!password.trim()) {
+      setErrorMessage("Please enter your password.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log(response);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
       // Login successful - AuthManager will handle the navigation
     } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage =
         "Login failed. Please check your credentials and try again.";
 
-      if (error.code === "auth/user-not-found") {
+      if (error.code === "auth/invalid-credential") {
+        errorMessage = "Invalid email or password. Please verify your credentials. If you don't have an account, click 'Sign Up' below.";
+      } else if (error.code === "auth/user-not-found") {
         errorMessage = "No account found with this email address.";
       } else if (error.code === "auth/wrong-password") {
         errorMessage = "Incorrect password. Please try again.";
@@ -37,9 +58,11 @@ export default function Login() {
         errorMessage = "Please enter a valid email address.";
       } else if (error.code === "auth/user-disabled") {
         errorMessage = "This account has been disabled.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many failed login attempts. Please try again later.";
       }
 
-      alert(errorMessage);
+      setErrorMessage(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -59,7 +82,10 @@ export default function Login() {
         placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={email}
-        onChangeText={(text) => setEmail(text)}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (errorMessage) setErrorMessage(""); // Limpar erro ao digitar
+        }}
         keyboardType="email-address"
       />
 
@@ -69,9 +95,16 @@ export default function Login() {
         placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={password}
-        onChangeText={(text) => setPassword(text)}
+        onChangeText={(text) => {
+          setPassword(text);
+          if (errorMessage) setErrorMessage(""); // Limpar erro ao digitar
+        }}
         secureTextEntry={true}
       />
+
+      {errorMessage ? (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      ) : null}
 
       {loading ? (
         <ActivityIndicator size="large" color="#ffd33d" />
@@ -97,10 +130,10 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: "center",
     marginHorizontal: 20,
     width: "80%",
+    maxWidth: 400,
   },
   title: {
     fontSize: 28,
@@ -140,5 +173,16 @@ const styles = StyleSheet.create({
     color: "#ffd33d",
     fontSize: 16,
     textDecorationLine: "underline",
+  },
+  errorText: {
+    color: "#ff6b6b",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 10,
+    backgroundColor: "rgba(255, 107, 107, 0.1)",
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 107, 107, 0.3)",
   },
 });

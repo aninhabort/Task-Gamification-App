@@ -11,27 +11,39 @@ import {
   View,
 } from "react-native";
 import { SwipeListView } from "react-native-swipe-list-view";
+import { useUserStatsContext } from "../../contexts/UserStatsContext";
+import { FIREBASE_AUTH } from "../../FirebaseConfig";
+import Login from "../components/Login";
 import TaskCard from "../components/TaskCard";
 import VoucherCard from "../components/VoucherCard";
-import { useUserStatsContext } from "../contexts/UserStatsContext";
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [taskTitle, setTaskTitle] = React.useState("");
   const [urgency, setUrgency] = React.useState("normal");
   const [taskType, setTaskType] = React.useState("study");
-  const [tasks, setTasks] = React.useState([
-    { title: "Estudar React Native", points: 50, type: "study" },
-  ]);
-  const { stats, addCompletedTask } = useUserStatsContext();
+  const { stats, addCompletedTask, tasks, addTask, completeTask } = useUserStatsContext();
+  
+  // Debug: log para verificar se as tasks estão sendo carregadas
+  React.useEffect(() => {
+  }, [tasks, stats]);
 
-  function handleCompleteTask(idx: number) {
-    const completedTask = tasks[idx];
-    if (completedTask) {
-      addCompletedTask(completedTask.points);
-    }
-    setTasks((tasks) => tasks.filter((_, i) => i !== idx));
+  // Verificar estado de autenticação
+  const [authUser, setAuthUser] = React.useState<any>(null);
+  
+  React.useEffect(() => {
+    const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user: any) => {
+      setAuthUser(user);
+    });
+    return unsubscribe;
+  }, []);
+
+  function handleCompleteTask(taskId: string, points: number) {
+    addCompletedTask(points);
+    completeTask(taskId);
   }
+
+
 
   function calculatePoints(urgency: string) {
     switch (urgency) {
@@ -47,11 +59,20 @@ export default function HomeScreen() {
   function handleAddTask() {
     if (!taskTitle) return;
     const points = calculatePoints(urgency);
-    setTasks([...tasks, { title: taskTitle, points, type: taskType }]);
+    addTask({ title: taskTitle, points, type: taskType, urgency });
     setTaskTitle("");
     setUrgency("normal");
     setTaskType("study");
     setModalVisible(false);
+  }
+
+  // Se o usuário não estiver autenticado, mostrar tela de login
+  if (!authUser) {
+    return (
+      <View style={styles.loginContainer}>
+        <Login />
+      </View>
+    );
   }
 
   return (
@@ -67,6 +88,7 @@ export default function HomeScreen() {
           <Ionicons name="add-circle" size={40} color="#ffd33d" />
         </TouchableOpacity>
       </View>
+      
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -176,27 +198,39 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
-      <SwipeListView
-        data={tasks}
-        keyExtractor={(_, idx) => String(idx)}
-        renderItem={({ item }) => (
-          <TaskCard title={item.title} points={item.points} type={item.type} />
-        )}
-        renderHiddenItem={({ index }) => (
-          <View style={styles.rowBack}>
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={() => handleCompleteTask(index)}
-            >
-              <Text style={styles.completeButtonText}>Concluir</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        rightOpenValue={-100}
-        disableRightSwipe
-        style={styles.tasksScroll}
-      />
-      {/* ...existing code... */}
+      
+      {tasks.length === 0 ? (
+        <View style={styles.emptyTasksContainer}>
+          <Text style={styles.emptyTasksTitle}>No tasks yet!</Text>
+          <Text style={styles.emptyTasksSubtitle}>
+            Start by adding your first task using the + button above
+          </Text>
+          <Text style={styles.emptyTasksHint}>
+            Set priorities and earn points by completing tasks!
+          </Text>
+        </View>
+      ) : (
+        <SwipeListView
+          data={tasks}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TaskCard title={item.title} points={item.points} type={item.type} />
+          )}
+          renderHiddenItem={({ item }) => (
+            <View style={styles.rowBack}>
+              <TouchableOpacity
+                style={styles.completeButton}
+                onPress={() => handleCompleteTask(item.id, item.points)}
+              >
+                <Text style={styles.completeButtonText}>Concluir</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          rightOpenValue={-100}
+          disableRightSwipe
+          style={styles.tasksScroll}
+        />
+      )}
 
       <View style={styles.vouchersSection}>
         <Text style={styles.text}>Vouchers</Text>
@@ -209,16 +243,19 @@ export default function HomeScreen() {
             title="Discount Voucher"
             points={100}
             image="https://via.placeholder.com/150"
+            voucherId="discount-voucher"
           />
           <VoucherCard
             title="Coffee Voucher"
             points={80}
             image="https://via.placeholder.com/150/ffd33d/25292e"
+            voucherId="coffee-voucher"
           />
           <VoucherCard
             title="Book Voucher"
             points={120}
             image="https://via.placeholder.com/150/353a40/ffd33d"
+            voucherId="book-voucher"
           />
         </ScrollView>
       </View>
@@ -227,6 +264,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  loginContainer: {
+    flex: 1,
+    backgroundColor: "#25292e",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: "#25292e",
@@ -397,5 +440,34 @@ const styles = StyleSheet.create({
     color: "#ffd33d",
     fontSize: 16,
     fontWeight: "bold",
+  },
+
+
+  emptyTasksContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  emptyTasksTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffd33d",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  emptyTasksSubtitle: {
+    fontSize: 16,
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+  emptyTasksHint: {
+    fontSize: 14,
+    color: "#aaa",
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });

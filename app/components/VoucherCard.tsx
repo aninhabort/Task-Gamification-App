@@ -6,18 +6,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useUserStatsContext } from "../contexts/UserStatsContext";
+import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
 interface VoucherCardProps {
   title: string;
   points: number;
   image: string;
+  compact?: boolean;
+  voucherId?: string;
 }
 
 export default function VoucherCard({
   title,
   points,
   image,
+  compact = false,
+  voucherId = title.toLowerCase().replace(/\s+/g, '-'),
 }: VoucherCardProps) {
   const { stats, redeemVoucher } = useUserStatsContext();
 
@@ -37,8 +41,8 @@ export default function VoucherCard({
         { text: "Cancel", style: "cancel" },
         {
           text: "Redeem",
-          onPress: () => {
-            const success = redeemVoucher(points);
+          onPress: async () => {
+            const success = await redeemVoucher(points, { voucherId, title });
             if (success) {
               Alert.alert(
                 "Success!",
@@ -59,6 +63,18 @@ export default function VoucherCard({
   };
 
   const canAfford = stats.totalPoints >= points;
+
+  if (compact) {
+    return (
+      <View style={styles.compactCard}>
+        <Image source={{ uri: image }} style={styles.compactImage} />
+        <View style={styles.compactContent}>
+          <Text style={styles.compactTitle}>{title}</Text>
+          <Text style={styles.compactPoints}>{points} pts</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
@@ -126,5 +142,34 @@ const styles = StyleSheet.create({
   },
   redeemButtonTextDisabled: {
     color: "#aaa",
+  },
+  compactCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: 140,
+    backgroundColor: "#353a40",
+    borderRadius: 12,
+    padding: 8,
+  },
+  compactImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: "#ffd33d",
+    marginRight: 8,
+  },
+  compactContent: {
+    flex: 1,
+  },
+  compactTitle: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  compactPoints: {
+    color: "#ffd33d",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

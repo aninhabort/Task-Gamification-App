@@ -1,7 +1,18 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
+import React from "react";
+import { FIREBASE_AUTH } from "../../FirebaseConfig";
 
 export default function TabLayout() {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  React.useEffect(() => {
+    const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -9,15 +20,18 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#25292e",
+          display: isAuthenticated ? "flex" : "none", // Ocultar tabs quando não logado
         },
         tabBarIcon: ({ color, size }) => {
-          let iconName: "home-outline" | "gift-outline" | "person-outline" = "home-outline";
+          let iconName: "home-outline" | "gift-outline" | "person-outline" | "settings-outline" = "home-outline";
           if (route.name === "index") {
             iconName = "home-outline";
           } else if (route.name === "rewards") {
             iconName = "gift-outline";
           } else if (route.name === "profile") {
             iconName = "person-outline";
+          } else if (route.name === "settings") {
+            iconName = "settings-outline";
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -39,6 +53,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
         }}
       />
     </Tabs>
