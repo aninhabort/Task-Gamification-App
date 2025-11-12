@@ -1,50 +1,144 @@
-# Welcome to your Expo app 👋
+# 🎮 Task Gamification App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Um aplicativo de **gamificação de tarefas** desenvolvido com **React Native (Expo)** e **Firebase**, criado para transformar o ato de cumprir tarefas em algo divertido, motivador e recompensador.  
+Complete atividades, ganhe pontos e desbloqueie recompensas!
 
-## Get started
+---
 
-1. Install dependencies
+## 🖼️ Preview
 
+<div align="center">
+
+✨ **Interface do App (Design no Figma)** ✨  
+
+| Tela Inicial | Tela de Tarefas | Tela de Recompensas |
+|:-------------:|:---------------:|:-------------------:|
+| <img src="assets/preview/home.png" width="250" /> | <img src="assets/preview/tasks.png" width="250" /> | <img src="assets/preview/rewards.png" width="250" /> |
+
+📱 *Design desenvolvido no [Figma](https://www.figma.com/design/npHlGDw3o4MpteiqqpKNzv/Task-Gamification-App)*  
+
+</div>
+
+---
+
+## 🚀 Tecnologias
+
+- ⚛️ **React Native (Expo)** — base do app mobile  
+- 🔥 **Firebase** — autenticação, armazenamento e base de dados  
+- 💅 **Styled Components** — estilização moderna e reutilizável  
+- 🧠 **TypeScript** — tipagem segura e código mais robusto  
+- 🧭 **React Navigation** — navegação entre telas  
+- 🏗️ **ESLint + Prettier** — padrões e formatação de código  
+
+---
+
+## 🧩 Funcionalidades
+
+- ✅ **Criação de tarefas personalizadas**  
+- ⭐ **Sistema de pontos** com base nas tarefas concluídas  
+- 🏅 **Níveis e progresso do usuário**  
+- 🎁 **Vouchers e recompensas desbloqueáveis**  
+- 📊 **Dashboard com estatísticas e desempenho**  
+- 🔐 **Login e registro com Firebase Auth**  
+
+---
+
+## 💡 Estrutura do Projeto
+
+src/
+├── components/ # Componentes reutilizáveis (botões, cards, modais)
+├── screens/ # Telas principais do app (Home, Profile, Tasks, etc.)
+├── hooks/ # Hooks personalizados
+├── contexts/ # Contextos globais (autenticação, tarefas, pontos)
+├── services/ # Configurações do Firebase e outras integrações
+├── utils/ # Funções auxiliares
+└── assets/ # Ícones, imagens e fontes
+
+
+---
+
+## 🧠 Lógica de Gamificação
+
+Cada tarefa possui:
+- **Categoria** (ex: produtividade, estudo, bem-estar)
+- **Pontuação** variável de acordo com a categoria
+- **Sistema de progressão** baseado em XP acumulado  
+- **Vouchers**: recompensas trocáveis com os pontos conquistados
+
+Exemplo de categorias:
+| Categoria     | Pontos |
+|----------------|--------|
+| Produtividade  | 20     |
+| Saúde e Bem-estar | 15  |
+| Estudo         | 25     |
+| Lazer          | 10     |
+
+---
+
+## 🧭 Como Executar
+
+1. Clone o repositório  
    ```bash
-   npm install
-   ```
+   git clone https://github.com/aninhabort/Task-Gamification-App.git
 
-2. Start the app
+Acesse o diretório
 
-   ```bash
-   npx expo start
-   ```
+cd Task-Gamification-App
 
-In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Instale as dependências
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+npm install
+# ou
+pnpm install
 
-## Get a fresh project
 
-When you're ready, run:
+Configure o Firebase:
 
-```bash
-npm run reset-project
-```
+Crie um projeto no Firebase Console
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Ative Authentication e Firestore Database
 
-## Learn more
+Adicione o arquivo firebaseConfig.ts dentro de src/services/ com suas credenciais.
 
-To learn more about developing your project with Expo, look at the following resources:
+Execute o projeto
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+npx expo start
 
-## Join the community
+🎨 Design
 
-Join our community of developers creating universal apps.
+O design completo está disponível no Figma:
+👉 Figma - Task Gamification App
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+🛠️ Próximas Implementações
+
+ Sistema de ranking entre usuários
+
+ Integração com notificações push
+
+ Modo dark/light
+
+ Exportação de histórico de tarefas
+
+ Melhorias de acessibilidade
+
+💬 Contribuindo
+
+Contribuições são sempre bem-vindas!
+
+Faça um fork do projeto
+
+Crie uma branch: git checkout -b feature/minha-feature
+
+Faça o commit: git commit -m 'Adicionei uma nova feature'
+
+Envie para o repositório: git push origin feature/minha-feature
+
+Abra um Pull Request
+
+📄 Licença
+
+Este projeto está sob a licença MIT — veja o arquivo LICENSE
+ para mais detalhes.
+
+✨ Feito com dedicação por @aninhabort
