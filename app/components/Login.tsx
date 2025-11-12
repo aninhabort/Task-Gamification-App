@@ -2,12 +2,12 @@ import { FIREBASE_AUTH } from "@/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Signup from "./Signup";
 
@@ -87,6 +87,7 @@ export default function Login() {
           if (errorMessage) setErrorMessage(""); // Limpar erro ao digitar
         }}
         keyboardType="email-address"
+        autoComplete="email"
       />
 
       <TextInput
@@ -132,8 +133,9 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     marginHorizontal: 20,
-    width: "80%",
+    width: "100%",
     maxWidth: 400,
+    alignSelf: "center",
   },
   title: {
     fontSize: 28,

@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -69,7 +70,7 @@ export default function HomeScreen() {
   // Se o usuário não estiver autenticado, mostrar tela de login
   if (!authUser) {
     return (
-      <View style={styles.loginContainer}>
+      <View style={[styles.loginContainer, Platform.OS === 'web' && styles.webLoginContainer]}>
         <Login />
       </View>
     );
@@ -269,6 +270,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#25292e",
     justifyContent: "center",
     alignItems: "center",
+  },
+  webLoginContainer: {
+    paddingHorizontal: 40,
+    paddingVertical: 20,
   },
   container: {
     flex: 1,
