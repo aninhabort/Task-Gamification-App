@@ -11,7 +11,7 @@ import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
 export default function SettingsScreen() {
-  const { resetStats } = useUserStatsContext();
+  const { resetStats, reloadTasks } = useUserStatsContext();
 
   const handleLogout = () => {
     Alert.alert(
@@ -40,19 +40,39 @@ export default function SettingsScreen() {
 
   const handleResetStats = () => {
     Alert.alert(
-      "Reset Statistics",
-      "This will permanently delete all your tasks, points, and vouchers. This action cannot be undone.",
+      "Reset All Statistics",
+      "⚠️ This will permanently delete:\n\n• All completed tasks\n• All task history\n• All earned points\n• All redeemed vouchers\n\nThis action cannot be undone!",
       [
         {
           text: "Cancel",
           style: "cancel",
         },
         {
-          text: "Reset All Data",
+          text: "Reset Everything",
           style: "destructive",
-          onPress: () => {
-            resetStats();
-            Alert.alert("Success", "All statistics have been reset successfully.");
+          onPress: async () => {
+            try {
+              // Mostrar loading
+              Alert.alert("Resetting...", "Please wait while we reset your data.");
+              
+              // Executar reset
+              await resetStats();
+              
+              // Recarregar tasks para refletir mudanças na UI
+              reloadTasks();
+              
+              // Confirmar sucesso
+              Alert.alert(
+                "✅ Reset Complete", 
+                "All your statistics and data have been successfully reset. You can start fresh now!"
+              );
+            } catch (error) {
+              console.error('Error resetting statistics:', error);
+              Alert.alert(
+                "❌ Error", 
+                "Failed to reset statistics. Please try again or contact support if the problem persists."
+              );
+            }
           },
         },
       ]
@@ -103,7 +123,7 @@ export default function SettingsScreen() {
           
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="information-circle-outline" size={24} color="#ffd33d" />
+              <Ionicons name="information-circle-outline" size={24} color="#fff" />
               <Text style={styles.settingText}>App Version</Text>
             </View>
             <Text style={styles.versionText}>1.0.0</Text>
@@ -124,7 +144,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#ffd33d",
+    color: "#fff",
     marginBottom: 24,
     textAlign: "center",
   },

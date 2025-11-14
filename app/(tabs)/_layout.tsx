@@ -1,7 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 
 export default function TabLayout() {
@@ -17,12 +16,11 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarActiveTintColor: "#ffd33d",
+        tabBarActiveTintColor: "#fff",
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#25292e",
-          // Na web, sempre mostrar tabs; no mobile, ocultar quando não logado
-          display: Platform.OS === 'web' || isAuthenticated ? "flex" : "none",
+          display: isAuthenticated ? "flex" : "none",
         },
         tabBarIcon: ({ color, size }) => {
           let iconName: "home-outline" | "gift-outline" | "person-outline" | "settings-outline" = "home-outline";

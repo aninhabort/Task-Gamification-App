@@ -1,6 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import {
+  Alert,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -11,27 +13,74 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SwipeListView } from "react-native-swipe-list-view";
+
+import { useFeaturedVouchers } from "../../contexts/FeaturedVouchersContext";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import Login from "../components/Login";
-import TaskCard from "../components/TaskCard";
-import VoucherCard from "../components/VoucherCard";
+
+
+interface Voucher {
+  id: string;
+  title: string;
+  points: number;
+  category: string;
+  description: string;
+}
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [taskTitle, setTaskTitle] = React.useState("");
   const [urgency, setUrgency] = React.useState("normal");
   const [taskType, setTaskType] = React.useState("study");
-  const { stats, addCompletedTask, tasks, addTask, completeTask } = useUserStatsContext();
-  
+  const {
+    stats,
+    addCompletedTask,
+    tasks,
+    addTask,
+    completeTask,
+    redeemVoucher,
+  } = useUserStatsContext();
+
+  // Usar o contexto compartilhado dos Featured Vouchers
+  const { featuredVouchers } = useFeaturedVouchers();
+
+  // Função para gerar imagem baseada na categoria
+  const getVoucherImage = (category: string) => {
+    const imageMap: Record<string, string> = {
+      "Café / Snack Break":
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=300&fit=crop&crop=center",
+      Lazer:
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop&crop=center",
+      "Self-Care":
+        "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=300&h=300&fit=crop&crop=center",
+      Educação:
+        "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=300&fit=crop&crop=center",
+      Fitness:
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop&crop=center",
+      Tecnologia:
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&h=300&fit=crop&crop=center",
+      "Mystery Box":
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center",
+      "Premium / Raro":
+        "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=300&fit=crop&crop=center",
+      "Community Reward":
+        "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300&h=300&fit=crop&crop=center",
+      "Charity / Good Deed":
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=300&fit=crop&crop=center",
+    };
+    return (
+      imageMap[category] ||
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center"
+    );
+  };
+
   // Debug: log para verificar se as tasks estão sendo carregadas
-  React.useEffect(() => {
-  }, [tasks, stats]);
+  React.useEffect(() => {}, [tasks, stats]);
 
   // Verificar estado de autenticação
   const [authUser, setAuthUser] = React.useState<any>(null);
-  
+
   React.useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user: any) => {
       setAuthUser(user);
@@ -43,8 +92,6 @@ export default function HomeScreen() {
     addCompletedTask(points);
     completeTask(taskId);
   }
-
-
 
   function calculatePoints(urgency: string) {
     switch (urgency) {
@@ -67,10 +114,54 @@ export default function HomeScreen() {
     setModalVisible(false);
   }
 
+  const handleRedeemVoucher = (voucher: Voucher) => {
+    if (stats.totalPoints < voucher.points) {
+      Alert.alert(
+        "Insufficient Points",
+        `You need ${voucher.points} points to redeem this voucher. You currently have ${stats.totalPoints} points.`
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Redeem Voucher",
+      `Are you sure you want to redeem "${voucher.title}" for ${voucher.points} points?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Redeem",
+          onPress: async () => {
+            const success = await redeemVoucher(voucher.points, {
+              voucherId: voucher.id,
+              title: voucher.title,
+            });
+
+            if (success) {
+              Alert.alert(
+                "Success!",
+                `You have successfully redeemed "${voucher.title}"!`
+              );
+            } else {
+              Alert.alert(
+                "Error",
+                "Failed to redeem voucher. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // Se o usuário não estiver autenticado, mostrar tela de login
   if (!authUser) {
     return (
-      <View style={[styles.loginContainer, Platform.OS === 'web' && styles.webLoginContainer]}>
+      <View
+        style={[
+          styles.loginContainer,
+          Platform.OS === "web" && styles.webLoginContainer,
+        ]}
+      >
         <Login />
       </View>
     );
@@ -78,18 +169,53 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header com add button */}
       <View style={styles.header}>
-        <View style={styles.pointsContainer}>
-          <Text style={styles.pointsText}>Points: {stats.totalPoints}</Text>
-        </View>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
         >
-          <Ionicons name="add-circle" size={40} color="#ffd33d" />
+          <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
-      
+
+      {/* Tasks List */}
+      <View style={styles.tasksContainer}>
+        {tasks.length === 0 ? (
+          <View style={styles.emptyTasksContainer}>
+            <Ionicons name="clipboard-outline" size={48} color="#666" />
+            <Text style={styles.emptyTasksTitle}>Nenhuma tarefa ainda</Text>
+            <Text style={styles.emptyTasksSubtitle}>
+              Toque no botão + para adicionar sua primeira tarefa
+            </Text>
+          </View>
+        ) : (
+          tasks.slice(0, 5).map((task, index) => (
+            <TouchableOpacity
+              key={task.id}
+              style={styles.taskItem}
+              onPress={() => handleCompleteTask(task.id, task.points)}
+            >
+              <View style={styles.taskIcon}>
+                <Ionicons 
+                  name={
+                    task.type === 'health' ? 'fitness-outline' :
+                    task.type === 'study' ? 'book-outline' :
+                    task.type === 'work' ? 'briefcase-outline' : 'checkmark-circle-outline'
+                  } 
+                  size={20} 
+                  color="#fff" 
+                />
+              </View>
+              <View style={styles.taskInfo}>
+                <Text style={styles.taskTitle}>{task.title}</Text>
+                <Text style={styles.taskPoints}>{task.points} points</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+      </View>
+
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -199,65 +325,35 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
-      
-      {tasks.length === 0 ? (
-        <View style={styles.emptyTasksContainer}>
-          <Text style={styles.emptyTasksTitle}>No tasks yet!</Text>
-          <Text style={styles.emptyTasksSubtitle}>
-            Start by adding your first task using the + button above
-          </Text>
-          <Text style={styles.emptyTasksHint}>
-            Set priorities and earn points by completing tasks!
-          </Text>
-        </View>
-      ) : (
-        <SwipeListView
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TaskCard title={item.title} points={item.points} type={item.type} />
-          )}
-          renderHiddenItem={({ item }) => (
-            <View style={styles.rowBack}>
-              <TouchableOpacity
-                style={styles.completeButton}
-                onPress={() => handleCompleteTask(item.id, item.points)}
-              >
-                <Text style={styles.completeButtonText}>Concluir</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          rightOpenValue={-100}
-          disableRightSwipe
-          style={styles.tasksScroll}
-        />
-      )}
 
-      <View style={styles.vouchersSection}>
-        <Text style={styles.text}>Vouchers</Text>
+      {/* Featured Vouchers Section */}
+      <View style={styles.featuredVouchersSection}>
+        <Text style={styles.sectionTitle}>Featured Vouchers</Text>
         <ScrollView
           horizontal
-          style={styles.vouchersScroll}
+          style={styles.featuredVouchersScroll}
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.featuredVouchersContainer}
         >
-          <VoucherCard
-            title="Discount Voucher"
-            points={100}
-            image="https://via.placeholder.com/150"
-            voucherId="discount-voucher"
-          />
-          <VoucherCard
-            title="Coffee Voucher"
-            points={80}
-            image="https://via.placeholder.com/150/ffd33d/25292e"
-            voucherId="coffee-voucher"
-          />
-          <VoucherCard
-            title="Book Voucher"
-            points={120}
-            image="https://via.placeholder.com/150/353a40/ffd33d"
-            voucherId="book-voucher"
-          />
+          {featuredVouchers.map((voucher) => (
+            <TouchableOpacity 
+              key={voucher.id} 
+              style={styles.featuredCard}
+              onPress={() => handleRedeemVoucher(voucher)}
+            >
+              <View style={styles.featuredImageContainer}>
+                <Image 
+                  source={{ uri: getVoucherImage(voucher.category) }}
+                  style={styles.featuredImage}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={styles.featuredInfo}>
+                <Text style={styles.featuredTitle} numberOfLines={1}>{voucher.title}</Text>
+                <Text style={styles.featuredPoints}>Redeem with {voucher.points} points</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
     </View>
@@ -278,37 +374,69 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292e",
-    justifyContent: "flex-start",
     paddingTop: 60,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  text: {
-    color: "#fff",
-    fontSize: 24,
-    marginBottom: 24,
-  },
-  tasksScroll: {
-    maxHeight: 440,
-    marginBottom: 16,
-  },
-  vouchersSection: {
-    flex: 1,
     justifyContent: "flex-end",
-    marginBottom: 32,
-  },
-  vouchersScroll: {
-    flexGrow: 0,
+    alignItems: "center",
+    marginBottom: 30,
   },
   addButton: {
-    alignItems: "center",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
-    // Remove any TextStyle or ImageStyle properties if present
+    alignItems: "center",
+  },
+  tasksContainer: {
+    flex: 1,
+    marginBottom: 30,
+  },
+  taskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  taskIcon: {
+    backgroundColor: "#3E4246",
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  taskInfo: {
+    flex: 1,
+  },
+  taskTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  taskPoints: {
+    color: "#99A1C2",
+    fontSize: 14,
+  },
+  featuredVouchersSection: {
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  featuredVouchersScroll: {
+    flexGrow: 0,
+  },
+  featuredVouchersContainer: {
+    paddingRight: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -317,14 +445,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#25292e",
+    backgroundColor: "#1a1a1a",
     padding: 24,
     borderRadius: 16,
     width: "90%",
     alignItems: "stretch",
   },
   modalTitle: {
-    color: "#ffd33d",
+    color: "#fff",
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 16,
@@ -356,9 +484,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   urgencySelected: {
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
   },
-  // Removed misplaced TextStyle properties from styles object root
   typeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -372,35 +499,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   typeSelected: {
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
   },
   typeText: {
     color: "#25292e",
     fontWeight: "bold",
   },
-  rowBack: {
-    alignItems: "center",
-    backgroundColor: "#4BB543",
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingRight: 2,
-    marginTop: 8,
-    borderRadius: 12,
-  },
-  completeButton: {
-    backgroundColor: "#4BB543",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  completeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
   saveButton: {
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -439,40 +545,61 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ffd33d",
+    borderColor: "#fff",
   },
   pointsText: {
-    color: "#ffd33d",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
-
-
+  featuredCard: {
+    width: 160,
+    marginRight: 16,
+    backgroundColor: "transparent",
+  },
+  featuredImageContainer: {
+    width: "100%",
+    height: 160,
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  featuredImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 16,
+  },
+  featuredInfo: {
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  featuredTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  featuredPoints: {
+    fontSize: 14,
+    color: "#99A1C2",
+  },
   emptyTasksContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 32,
     paddingVertical: 40,
   },
   emptyTasksTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#ffd33d",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
     textAlign: "center",
-    marginBottom: 16,
   },
   emptyTasksSubtitle: {
-    fontSize: 16,
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 12,
-    lineHeight: 22,
-  },
-  emptyTasksHint: {
+    color: "#99A1C2",
     fontSize: 14,
-    color: "#aaa",
     textAlign: "center",
-    fontStyle: "italic",
+    paddingHorizontal: 20,
   },
 });

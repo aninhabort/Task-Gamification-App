@@ -95,7 +95,7 @@ export default function Signup({ onBackToLogin }: SignupProps) {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#ffd33d" />
+        <ActivityIndicator size="large" color="#fff" />
       ) : (
         <>
           <TouchableOpacity style={styles.signupButton} onPress={signUp}>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#ffd33d",
+    color: "#fff",
     textAlign: "center",
     marginBottom: 40,
   },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   signupButton: {
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 20,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButtonText: {
-    color: "#ffd33d",
+    color: "#fff",
     fontSize: 16,
     textDecorationLine: "underline",
   },

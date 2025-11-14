@@ -1,7 +1,7 @@
 import { FIREBASE_AUTH } from "@/FirebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -31,6 +31,14 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
     router.push("/edit-profile");
   };
 
+  const refreshUserData = async () => {
+    const currentUser = FIREBASE_AUTH.currentUser;
+    if (currentUser) {
+      await currentUser.reload();
+      setUser({ ...currentUser });
+    }
+  };
+
   const loadCompletedTasks = async (userId: string) => {
     try {
       setLoadingTasks(true);
@@ -58,14 +66,34 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
     return unsubscribe;
   }, []);
 
-  const getInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase();
+  // Recarregar dados do usuário quando a tela ganhar foco (volta da edição)
+  useFocusEffect(
+    useCallback(() => {
+      refreshUserData();
+    }, [])
+  );
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    
+    const words = name.trim().split(' ');
+    if (words.length === 1) {
+      // Se for só uma palavra, pega as duas primeiras letras
+      return words[0].substring(0, 2).toUpperCase();
+    } else {
+      // Se for múltiplas palavras, pega a primeira letra de cada palavra (máximo 2)
+      return words
+        .slice(0, 2)
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase();
+    }
   };
 
   if (!user) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#ffd33d" />
+        <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -77,7 +105,7 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
       <View style={styles.header}>
         <View style={styles.spacer} />
         <TouchableOpacity style={styles.settingsIconButton} onPress={navigateToSettings}>
-          <Ionicons name="settings-outline" size={24} color="#ffd33d" />
+          <Ionicons name="settings-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -89,12 +117,12 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarText}>
-                {getInitials(user.email || "User")}
+                {getInitials(user.displayName || user.email?.split('@')[0] || "User")}
               </Text>
             </View>
           )}
           <TouchableOpacity style={styles.editProfileButton} onPress={navigateToEditProfile}>
-            <Ionicons name="pencil-outline" size={16} color="#ffd33d" />
+            <Ionicons name="pencil-outline" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -130,14 +158,14 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
         
         {loadingTasks ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#ffd33d" />
+            <ActivityIndicator size="small" color="#fff" />
             <Text style={styles.loadingTasksText}>Loading tasks...</Text>
           </View>
         ) : completedTasks.length > 0 ? (
           completedTasks.slice(0, 5).map((task) => (
             <View key={task.id} style={styles.taskItem}>
               <View style={styles.taskIcon}>
-                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                <Ionicons name="checkmark" size={16} color="#fff" />
               </View>
               <View style={styles.taskContent}>
                 <Text style={styles.taskTitle}>{task.title}</Text>
@@ -180,8 +208,6 @@ const styles = StyleSheet.create({
   },
   settingsIconButton: {
     padding: 8,
-    borderRadius: 20,
-    backgroundColor: "#353a40",
   },
   profileSection: {
     alignItems: "center",
@@ -199,7 +225,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -209,15 +235,14 @@ const styles = StyleSheet.create({
     color: "#25292e",
   },
   userName: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 8,
   },
   userHandle: {
     fontSize: 16,
     color: "#888",
-    marginBottom: 40,
+    marginBottom: 20,
   },
   editProfileButton: {
     position: "absolute",
@@ -240,12 +265,13 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 40,
+    marginBottom: 20,
     paddingHorizontal: 10,
   },
   statCard: {
-    backgroundColor: "#353a40",
     borderRadius: 12,
+    borderColor: "#454b52",
+    borderWidth: 2,
     padding: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -270,20 +296,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   taskItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#353a40",
   },
   taskIcon: {
-    marginRight: 16,
+    marginRight: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   taskContent: {
     flex: 1,
@@ -292,7 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   taskStatus: {
     fontSize: 14,

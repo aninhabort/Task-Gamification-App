@@ -1,5 +1,7 @@
-import { useRef, useState } from "react";
-import { Alert, Animated, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
+import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useFeaturedVouchers } from "../../contexts/FeaturedVouchersContext";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
 interface Voucher {
@@ -10,197 +12,79 @@ interface Voucher {
   description: string;
 }
 
-// Componente para item com swipe
-const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
-  voucher: Voucher;
-  onAddToFeatured: (voucher: Voucher) => void;
-  onRedeem: (voucher: Voucher) => void;
-  stats: any;
-}) => {
-  const pan = useRef(new Animated.Value(0)).current;
-  const [showStarIcon, setShowStarIcon] = useState(false);
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 50;
-      },
-      onPanResponderGrant: () => {
-        pan.setOffset((pan as any)._value);
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dx > 0) { // Only allow swipe to the right
-          pan.setValue(gestureState.dx);
-          setShowStarIcon(gestureState.dx > 60);
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        pan.flattenOffset();
-        
-        if (gestureState.dx > 80) {
-          // Trigger add to featured
-          Animated.spring(pan, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
-          setShowStarIcon(false);
-          onAddToFeatured(voucher);
-        } else {
-          // Snap back
-          Animated.spring(pan, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
-          setShowStarIcon(false);
-        }
-      },
-    })
-  ).current;
-
-  return (
-    <View style={styles.swipeContainer}>
-      {/* Background with star icon */}
-      <View style={styles.swipeBackground}>
-        <Animated.View style={[
-          styles.starIconContainer,
-          {
-            opacity: showStarIcon ? 1 : 0,
-            transform: [{
-              scale: showStarIcon ? 1 : 0.5
-            }]
-          }
-        ]}>
-          <Text style={styles.starIcon}>⭐</Text>
-          <Text style={styles.starText}>Add to Featured</Text>
-        </Animated.View>
-      </View>
-      
-      {/* Main content */}
-      <Animated.View
-        style={[
-          styles.rewardItem,
-          {
-            transform: [{
-              translateX: pan
-            }]
-          }
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.rewardIconContainer}>
-          <Text style={styles.rewardIcon}>
-            {voucher.category === 'Café / Snack Break' ? '☕' : 
-             voucher.category === 'Lazer' ? '🎬' :
-             voucher.category === 'Self-Care' ? '💆' :
-             voucher.category === 'Educação' ? '📚' :
-             voucher.category === 'Fitness' ? '💪' :
-             voucher.category === 'Tecnologia' ? '💻' :
-             voucher.category === 'Mystery Box' ? '🎁' :
-             voucher.category === 'Premium / Raro' ? '💎' :
-             voucher.category === 'Community Reward' ? '🏆' :
-             voucher.category === 'Charity / Good Deed' ? '❤️' : '🎁'}
-          </Text>
-        </View>
-        <View style={styles.rewardContent}>
-          <Text style={styles.rewardTitle}>{voucher.title}</Text>
-          <Text style={styles.rewardPoints}>{voucher.points} points</Text>
-        </View>
-        <View style={styles.rewardActions}>
-          <TouchableOpacity 
-            style={styles.featureButton}
-            onPress={() => onAddToFeatured(voucher)}
-          >
-            <Text style={styles.featureButtonText}>⭐</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[
-              styles.redeemButton,
-              stats.totalPoints < voucher.points && styles.redeemButtonDisabled
-            ]}
-            onPress={() => onRedeem(voucher)}
-            disabled={stats.totalPoints < voucher.points}
-          >
-            <Text style={[
-              styles.redeemButtonText,
-              stats.totalPoints < voucher.points && styles.redeemButtonTextDisabled
-            ]}>
-              Redeem
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-    </View>
-  );
-};
-
 export default function RewardScreen() {
   const { stats, redeemVoucher } = useUserStatsContext();
+  const { featuredVouchers } = useFeaturedVouchers();
   
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [voucherTitle, setVoucherTitle] = useState("");
+  // Estados do modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newVoucherTitle, setNewVoucherTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Café / Snack Break");
-  
-  const [featuredVouchers, setFeaturedVouchers] = useState<Voucher[]>([
-    {
-      id: "featured-1",
-      title: "Mystery Box Especial",
-      points: 1000,
-      category: "Mystery Box",
-      description: "Voucher aleatório (qualquer categoria) - Pode vir algo comum ou raro",
-    },
-    {
-      id: "featured-2", 
-      title: "Experiência Premium",
-      points: 2000,
-      category: "Premium / Raro",
-      description: "Voucher grande, experiência, assinatura anual",
-    },
-    {
-      id: "featured-3",
-      title: "Spa Day",
-      points: 500,
-      category: "Self-Care",
-      description: "Voucher de skincare, massagem, produto de beleza",
-    },
-    {
-      id: "featured-4",
-      title: "Curso Online Premium",
-      points: 700,
-      category: "Educação",
-      description: "Ebook, curso curto, desconto em app de estudo",
-    },
-  ]);
-
   const [allVouchers, setAllVouchers] = useState<Voucher[]>([
-    {
-      id: "1",
-      title: "Voucher de café",
-      points: 150,
-      category: "Café / Snack Break",
-      description: "Voucher de café, doce, ou snack",
-    },
-    {
-      id: "2",
-      title: "Aluguel de filme",
-      points: 300,
-      category: "Lazer",
-      description: "Aluguel de filme, assinatura curta, item digital",
-    },
-    {
-      id: "3",
-      title: "Produto de beleza",
-      points: 500,
-      category: "Self-Care",
-      description: "Voucher de skincare, massagem, produto de beleza",
-    },
-    {
-      id: "4",
-      title: "Curso online",
-      points: 700,
-      category: "Educação",
-      description: "Ebook, curso curto, desconto em app de estudo",
-    },
+    { id: '1', title: 'Mystery Box Especial', points: 1000, category: 'Mystery Box', description: 'Voucher aleatório (qualquer categoria) - Pode vir algo comum ou raro' },
+    { id: '2', title: 'Comprar 1 Livro', points: 300, category: 'Educação', description: 'Voucher para compra de um livro físico ou digital' },
+    { id: '3', title: 'Spa Day', points: 500, category: 'Self-Care', description: 'Voucher de skincare, massagem, produto de beleza' },
+    { id: '4', title: 'Free Coffee', points: 100, category: 'Café / Snack Break', description: 'Voucher para café grátis' },
+    { id: '5', title: 'Cinema Ticket', points: 250, category: 'Lazer', description: 'Ingresso de cinema para um filme' },
+    { id: '6', title: 'Gym Day Pass', points: 150, category: 'Fitness', description: 'Passe de um dia na academia' }
   ]);
+  
+  // Valores de pontos por categoria
+  const categoryPoints: Record<string, number> = {
+    'Café / Snack Break': 100,
+    'Lazer': 250,
+    'Self-Care': 500,
+    'Educação': 300,
+    'Fitness': 150,
+    'Tecnologia': 800,
+    'Mystery Box': 1000,
+    'Premium / Raro': 2000,
+    'Community Reward': 150,
+    'Charity / Good Deed': 200
+  };
+  
+  const categories = Object.keys(categoryPoints);
+
+  // Função para gerar imagem baseada na categoria
+  const getVoucherImage = (category: string) => {
+    const imageMap: Record<string, string> = {
+      'Café / Snack Break': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=300&fit=crop&crop=center',
+      'Lazer': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop&crop=center',
+      'Self-Care': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=300&h=300&fit=crop&crop=center',
+      'Educação': 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=300&fit=crop&crop=center',
+      'Fitness': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop&crop=center',
+      'Tecnologia': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&h=300&fit=crop&crop=center',
+      'Mystery Box': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center',
+      'Premium / Raro': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=300&fit=crop&crop=center',
+      'Community Reward': 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300&h=300&fit=crop&crop=center',
+      'Charity / Good Deed': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=300&fit=crop&crop=center'
+    };
+    return imageMap[category] || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center';
+  };
+
+  const handleAddVoucher = () => {
+    if (!newVoucherTitle.trim()) {
+      Alert.alert("Error", "Please enter a voucher title");
+      return;
+    }
+
+    const newVoucher: Voucher = {
+      id: Date.now().toString(),
+      title: newVoucherTitle.trim(),
+      points: categoryPoints[selectedCategory],
+      category: selectedCategory,
+      description: `Voucher for ${newVoucherTitle.trim()}`
+    };
+
+    setAllVouchers(prev => [...prev, newVoucher]);
+    setNewVoucherTitle("");
+    setModalVisible(false);
+    
+    Alert.alert(
+      "Success!",
+      `"${newVoucher.title}" has been added to the rewards list with ${newVoucher.points} points.`
+    );
+  };
 
   const handleRedeemVoucher = (voucher: Voucher) => {
     if (stats.totalPoints < voucher.points) {
@@ -213,7 +97,7 @@ export default function RewardScreen() {
 
     Alert.alert(
       "Redeem Voucher",
-      `Are you sure you want to redeem "${voucher.title}" for ${voucher.points}?`,
+      `Are you sure you want to redeem "${voucher.title}" for ${voucher.points} points?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -241,141 +125,41 @@ export default function RewardScreen() {
     );
   };
 
-  const calculateVoucherPoints = (category: string, title: string): number => {
-    const basePoints = {
-      "Café / Snack Break": 150,
-      "Lazer": 300,
-      "Self-Care": 500,
-      "Educação": 700,
-      "Fitness": 900,
-      "Tecnologia": 1200,
-      "Mystery Box": 1000,
-      "Premium / Raro": 2000,
-      "Community Reward": 100,
-      "Charity / Good Deed": 300,
-    };
-
-    return basePoints[category as keyof typeof basePoints] || 150;
-  };
-
-  const addNewVoucher = () => {
-    setShowAddModal(true);
-  };
-
-  const handleCreateVoucher = () => {
-    if (!voucherTitle.trim()) {
-      Alert.alert("Error", "Please enter a voucher title");
-      return;
-    }
-    
-    createVoucher(voucherTitle.trim(), selectedCategory);
-    setShowAddModal(false);
-    setVoucherTitle("");
-    setSelectedCategory("Café / Snack Break");
-  };
-
-  const createVoucher = (title: string, category: string) => {
-    const points = calculateVoucherPoints(category, title);
-    const newVoucher: Voucher = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      points,
-      category,
-      description: `${title} - ${category} voucher worth ${points} points`,
-    };
-
-    setAllVouchers(prev => [...prev, newVoucher]);
-    
-    Alert.alert(
-      "Voucher Created!",
-      `"${title}" has been added with ${points} points based on the ${category} category.`
-    );
-  };
-
-  const addToFeatured = (voucher: Voucher) => {
-    // Check if voucher is already featured
-    const isAlreadyFeatured = featuredVouchers.some(fv => fv.id === voucher.id);
-    
-    if (isAlreadyFeatured) {
-      Alert.alert("Already Featured", "This voucher is already in the Featured section!");
-      return;
-    }
-
-    // Limit featured vouchers to 6
-    if (featuredVouchers.length >= 6) {
-      Alert.alert(
-        "Featured Limit Reached", 
-        "You can only have 6 featured vouchers. Remove one first to add a new one."
-      );
-      return;
-    }
-
-    setFeaturedVouchers(prev => [...prev, { ...voucher, id: `featured-${voucher.id}` }]);
-    
-    Alert.alert(
-      "Added to Featured!",
-      `"${voucher.title}" has been added to the Featured section.`
-    );
-  };
-
-  const removeFromFeatured = (voucherId: string) => {
-    Alert.alert(
-      "Remove from Featured",
-      "Are you sure you want to remove this voucher from the Featured section?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => {
-            setFeaturedVouchers(prev => prev.filter(v => v.id !== voucherId));
-            Alert.alert("Removed!", "Voucher removed from Featured section.");
-          }
-        }
-      ]
-    );
-  };
-
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
       {/* Featured Section */}
       <View style={styles.featuredSection}>
-        <Text style={styles.featuredTitle}>Featured</Text>
-        <ScrollView 
-          horizontal 
+        <View style={styles.featuredHeader}>
+          <Text style={styles.featuredTitle}>Featured</Text>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Ionicons name="add" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.featuredContent}
+          contentContainerStyle={styles.featuredContainer}
         >
           {featuredVouchers.map((voucher) => (
-            <TouchableOpacity 
-              key={voucher.id} 
+            <TouchableOpacity
+              key={voucher.id}
               style={styles.featuredCard}
               onPress={() => handleRedeemVoucher(voucher)}
             >
               <View style={styles.featuredImageContainer}>
-                <Text style={styles.featuredImageText}>
-                  {voucher.category === 'Café / Snack Break' ? '☕' : 
-                   voucher.category === 'Lazer' ? '🎬' :
-                   voucher.category === 'Self-Care' ? '💆' :
-                   voucher.category === 'Educação' ? '📚' :
-                   voucher.category === 'Fitness' ? '💪' :
-                   voucher.category === 'Tecnologia' ? '💻' :
-                   voucher.category === 'Mystery Box' ? '🎁' :
-                   voucher.category === 'Premium / Raro' ? '💎' :
-                   voucher.category === 'Community Reward' ? '🏆' :
-                   voucher.category === 'Charity / Good Deed' ? '❤️' : '🎁'}
-                </Text>
+                <Image 
+                  source={{ uri: getVoucherImage(voucher.category) }}
+                  style={styles.featuredImage}
+                  resizeMode="cover"
+                />
               </View>
-              <TouchableOpacity 
-                style={styles.removeFeaturedButton}
-                onPress={() => removeFromFeatured(voucher.id)}
-              >
-                <Text style={styles.removeFeaturedText}>✕</Text>
-              </TouchableOpacity>
               <View style={styles.featuredInfo}>
-                <Text style={styles.featuredPoints}>{voucher.title}</Text>
-                <Text style={styles.featuredLabel}>{voucher.points} points</Text>
+                <Text style={styles.featuredCardTitle} numberOfLines={1}>{voucher.title}</Text>
+                <Text style={styles.featuredCardPoints}>{voucher.points} points</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -384,239 +168,107 @@ export default function RewardScreen() {
 
       {/* All Rewards Section */}
       <View style={styles.allRewardsSection}>
-        <View style={styles.allRewardsHeader}>
-          <Text style={styles.allRewardsTitle}>All Rewards</Text>
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={addNewVoucher}
-          >
-            <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.allRewardsTitle}>All Rewards</Text>
         
-        {allVouchers.map((voucher) => (
-          <SwipeableRewardItem
-            key={voucher.id}
-            voucher={voucher}
-            onAddToFeatured={addToFeatured}
-            onRedeem={handleRedeemVoucher}
-            stats={stats}
-          />
-        ))}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {allVouchers.map((voucher) => (
+            <View key={voucher.id} style={styles.rewardItem}>
+              <View style={styles.rewardIconContainer}>
+                <Image 
+                  source={{ uri: getVoucherImage(voucher.category) }}
+                  style={styles.rewardIcon}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={styles.rewardInfo}>
+                <Text style={styles.rewardTitle}>{voucher.title}</Text>
+                <Text style={styles.rewardPoints}>{voucher.points} points</Text>
+              </View>
+              <TouchableOpacity 
+                style={[styles.redeemButton, stats.totalPoints < voucher.points && styles.redeemButtonDisabled]}
+                onPress={() => handleRedeemVoucher(voucher)}
+                disabled={stats.totalPoints < voucher.points}
+              >
+                <Text style={[styles.redeemButtonText, stats.totalPoints < voucher.points && styles.redeemButtonTextDisabled]}>
+                  Redeem
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
       </View>
-      </ScrollView>
 
       {/* Add Voucher Modal */}
-    <Modal
-      visible={showAddModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowAddModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Add New Voucher</Text>
-          
-          <Text style={styles.modalLabel}>Title:</Text>
-          <TextInput
-            style={styles.modalInput}
-            value={voucherTitle}
-            onChangeText={setVoucherTitle}
-            placeholder="Enter voucher title"
-            placeholderTextColor="#888"
-          />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add New Voucher</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
 
-          <Text style={styles.modalLabel}>Category:</Text>
-          <View style={styles.categoryContainer}>
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Café / Snack Break" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Café / Snack Break")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Café / Snack Break" && styles.categoryTextSelected,
-              ]}>Café / Snack Break</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Café / Snack Break" && styles.categoryPointsSelected,
-              ]}>150 pts</Text>
-            </Pressable>
-            
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Lazer" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Lazer")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Lazer" && styles.categoryTextSelected,
-              ]}>Lazer</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Lazer" && styles.categoryPointsSelected,
-              ]}>300 pts</Text>
-            </Pressable>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Voucher Title</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newVoucherTitle}
+                onChangeText={setNewVoucherTitle}
+                placeholder="Enter voucher title..."
+                placeholderTextColor="#888"
+              />
+            </View>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Self-Care" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Self-Care")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Self-Care" && styles.categoryTextSelected,
-              ]}>Self-Care</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Self-Care" && styles.categoryPointsSelected,
-              ]}>500 pts</Text>
-            </Pressable>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Category ({categoryPoints[selectedCategory]} points)</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoryScroll}
+              >
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    style={[
+                      styles.categoryChip,
+                      selectedCategory === category && styles.categoryChipSelected
+                    ]}
+                    onPress={() => setSelectedCategory(category)}
+                  >
+                    <Text style={[
+                      styles.categoryChipText,
+                      selectedCategory === category && styles.categoryChipTextSelected
+                    ]}>
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Educação" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Educação")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Educação" && styles.categoryTextSelected,
-              ]}>Educação</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Educação" && styles.categoryPointsSelected,
-              ]}>700 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Fitness" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Fitness")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Fitness" && styles.categoryTextSelected,
-              ]}>Fitness</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Fitness" && styles.categoryPointsSelected,
-              ]}>900 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Tecnologia" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Tecnologia")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Tecnologia" && styles.categoryTextSelected,
-              ]}>Tecnologia</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Tecnologia" && styles.categoryPointsSelected,
-              ]}>1200 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Mystery Box" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Mystery Box")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Mystery Box" && styles.categoryTextSelected,
-              ]}>Mystery Box</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Mystery Box" && styles.categoryPointsSelected,
-              ]}>1000 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Premium / Raro" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Premium / Raro")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Premium / Raro" && styles.categoryTextSelected,
-              ]}>Premium / Raro</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Premium / Raro" && styles.categoryPointsSelected,
-              ]}>2000 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Community Reward" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Community Reward")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Community Reward" && styles.categoryTextSelected,
-              ]}>Community Reward</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Community Reward" && styles.categoryPointsSelected,
-              ]}>100 pts</Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Charity / Good Deed" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Charity / Good Deed")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Charity / Good Deed" && styles.categoryTextSelected,
-              ]}>Charity / Good Deed</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Charity / Good Deed" && styles.categoryPointsSelected,
-              ]}>300 pts</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.modalButtons}>
-            <Pressable style={styles.modalSaveButton} onPress={handleCreateVoucher}>
-              <Text style={styles.modalSaveButtonText}>Create</Text>
-            </Pressable>
-            <Pressable 
-              style={styles.modalCancelButton}
-              onPress={() => {
-                setShowAddModal(false);
-                setVoucherTitle("");
-                setSelectedCategory("Café / Snack Break");
-              }}
-            >
-              <Text style={styles.modalCancelButtonText}>Cancel</Text>
-            </Pressable>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addVoucherButton}
+                onPress={handleAddVoucher}
+              >
+                <Text style={styles.addVoucherButtonText}>Add Voucher</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
     </View>
   );
 }
@@ -626,296 +278,217 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#25292e",
     paddingTop: 60,
+    paddingHorizontal: 20,
   },
   featuredSection: {
-    paddingHorizontal: 20,
     marginBottom: 40,
   },
-  featuredTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 20,
-  },
-  featuredContent: {
-    paddingRight: 20,
-  },
-  featuredCard: {
-    width: 180,
-    height: 220,
-    backgroundColor: "#D4B896",
-    borderRadius: 16,
-    marginRight: 16,
-    overflow: "hidden",
-  },
-  featuredImageContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#D4B896",
-  },
-  featuredImageText: {
-    fontSize: 40,
-  },
-  featuredInfo: {
-    padding: 16,
-    backgroundColor: "#D4B896",
-  },
-  featuredPoints: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#25292e",
-    marginBottom: 4,
-  },
-  featuredLabel: {
-    fontSize: 14,
-    color: "#25292e",
-  },
-  allRewardsSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  allRewardsHeader: {
+  featuredHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 30,
   },
-  allRewardsTitle: {
+  featuredTitle: {
+    color: "#fff",
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
   },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffd33d",
-    justifyContent: "center",
-    alignItems: "center",
+  featuredContainer: {
+    paddingRight: 20,
   },
-  addButtonText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#25292e",
-  },
-  rewardItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#353a40",
-    borderRadius: 12,
-    padding: 16,
-  },
-  rewardIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: "#D4B896",
-    justifyContent: "center",
-    alignItems: "center",
+  featuredCard: {
+    width: 160,
     marginRight: 16,
+    backgroundColor: "transparent",
   },
-  rewardIcon: {
-    fontSize: 24,
-  },
-  rewardContent: {
-    flex: 1,
-  },
-  rewardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  rewardPoints: {
-    fontSize: 14,
-    color: "#888",
-  },
-  redeemButton: {
-    backgroundColor: "#ffd33d",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  redeemButtonDisabled: {
-    backgroundColor: "#666",
-  },
-  redeemButtonText: {
-    color: "#25292e",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  redeemButtonTextDisabled: {
-    color: "#999",
-  },
-  rewardActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  featureButton: {
-    backgroundColor: "#4a5568",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  featureButtonText: {
-    fontSize: 18,
-    color: "#ffd33d",
-  },
-  removeFeaturedButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1,
-  },
-  removeFeaturedText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    backgroundColor: "#353a40",
+  featuredImageContainer: {
+    width: "100%",
+    height: 160,
     borderRadius: 16,
-    padding: 24,
-    width: "90%",
-    maxWidth: 400,
+    overflow: "hidden",
   },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 24,
+  featuredImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 16,
   },
-  modalLabel: {
+  featuredInfo: {
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  featuredCardPoints: {
+    fontSize: 14,
+    color: "#99A1C2",
+  },
+  featuredCardTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#fff",
     marginBottom: 8,
   },
-  modalInput: {
-    backgroundColor: "#25292e",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+  allRewardsSection: {
+    flex: 1,
+  },
+  allRewardsTitle: {
     color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
     marginBottom: 20,
   },
-  categoryContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  categoryButton: {
-    backgroundColor: "#25292e",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    width: "48%",
+  addButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
     alignItems: "center",
   },
-  categorySelected: {
-    backgroundColor: "#ffd33d",
+  rewardItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
   },
-  categoryText: {
-    fontSize: 13,
+  rewardIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginRight: 20,
+    backgroundColor: "#E8D5C4",
+  },
+  rewardIcon: {
+    width: "100%",
+    height: "100%",
+  },
+  rewardInfo: {
+    flex: 1,
+  },
+  rewardTitle: {
     color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
-    textAlign: "center",
     marginBottom: 4,
   },
-  categoryTextSelected: {
-    color: "#25292e",
-  },
-  categoryPoints: {
-    fontSize: 11,
+  rewardPoints: {
     color: "#888",
-    fontWeight: "400",
-    textAlign: "center",
+    fontSize: 14,
   },
-  categoryPointsSelected: {
-    color: "#25292e",
-    opacity: 0.8,
+  redeemButton: {
+    backgroundColor: "#333",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginLeft: 10,
+  },
+  redeemButtonDisabled: {
+    backgroundColor: "#333",
+  },
+  redeemButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  redeemButtonTextDisabled: {
+    color: "#666",
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#2a2a2a",
+    borderRadius: 16,
+    padding: 24,
+    width: "90%",
+    maxWidth: 400,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#fff",
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  categoryScroll: {
+    maxHeight: 50,
+  },
+  categoryChip: {
+    backgroundColor: "#1a1a1a",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  categoryChipSelected: {
+    backgroundColor: "#fff",
+    borderColor: "#fff",
+  },
+  categoryChipText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  categoryChipTextSelected: {
+    color: "#1a1a1a",
   },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 12,
+    marginTop: 24,
   },
-  modalSaveButton: {
-    backgroundColor: "#ffd33d",
-    paddingHorizontal: 24,
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#444",
     paddingVertical: 12,
     borderRadius: 8,
-    flex: 1,
-    alignItems: "center",
+    marginRight: 8,
   },
-  modalSaveButtonText: {
-    color: "#25292e",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  modalCancelButton: {
-    backgroundColor: "#666",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flex: 1,
-    alignItems: "center",
-  },
-  modalCancelButtonText: {
+  cancelButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    textAlign: "center",
   },
-  swipeContainer: {
-    position: "relative",
-    marginBottom: 12,
+  addVoucherButton: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginLeft: 8,
   },
-  swipeBackground: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: "#2d6a4f",
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "flex-start",
-    paddingLeft: 20,
-  },
-  starIconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  starIcon: {
-    fontSize: 24,
-    color: "#ffd33d",
-  },
-  starText: {
-    color: "#fff",
-    fontSize: 14,
+  addVoucherButtonText: {
+    color: "#1a1a1a",
+    fontSize: 16,
     fontWeight: "600",
+    textAlign: "center",
   },
 });

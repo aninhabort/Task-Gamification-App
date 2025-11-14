@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { UserDataService } from "../services/UserDataService";
 
 export default function EditProfile() {
   const [user, setUser] = useState(FIREBASE_AUTH.currentUser);
@@ -28,27 +29,72 @@ export default function EditProfile() {
     return unsubscribe;
   }, []);
 
-  const getInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase();
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    
+    const words = name.trim().split(' ');
+    if (words.length === 1) {
+      // Se for só uma palavra, pega as duas primeiras letras
+      return words[0].substring(0, 2).toUpperCase();
+    } else {
+      // Se for múltiplas palavras, pega a primeira letra de cada palavra (máximo 2)
+      return words
+        .slice(0, 2)
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase();
+    }
   };
 
   const handleSaveProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      Alert.alert("Error", "No user session found. Please login again.");
+      return;
+    }
+
+    const trimmedDisplayName = displayName.trim();
+    
+    if (trimmedDisplayName === user.displayName) {
+      Alert.alert("No Changes", "Display name is the same. No update needed.");
+      return;
+    }
 
     setIsLoading(true);
     try {
+      console.log("Updating profile with displayName:", trimmedDisplayName);
+      
       await updateProfile(user, {
-        displayName: displayName.trim() || null,
+        displayName: trimmedDisplayName || null,
       });
 
+      // Force refresh the user data
+      await user.reload();
+      
+      // Sync with Firestore database
+      await UserDataService.createOrUpdateUser(user);
+      
+      console.log("Profile updated successfully. New displayName:", user.displayName);
+
       Alert.alert(
-        "Success",
-        "Profile updated successfully!",
-        [{ text: "OK", onPress: () => router.back() }]
+        "✅ Success",
+        `Profile updated successfully!\nNew display name: ${trimmedDisplayName || "No name set"}`,
+        [{ 
+          text: "OK", 
+          onPress: () => {
+            // Pequeno delay para garantir que os dados sejam propagados
+            setTimeout(() => router.back(), 100);
+          }
+        }]
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
-      Alert.alert("Error", "Failed to update profile. Please try again.");
+      
+      let errorMessage = "Failed to update profile. Please try again.";
+      if (error.code) {
+        errorMessage += `\nError: ${error.code}`;
+      }
+      
+      Alert.alert("❌ Error", errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +117,7 @@ export default function EditProfile() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleCancel}>
-          <Ionicons name="arrow-back" size={24} color="#ffd33d" />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.title}>Edit Profile</Text>
         <TouchableOpacity 
@@ -93,12 +139,12 @@ export default function EditProfile() {
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarText}>
-                {getInitials(user.email || "User")}
+                {getInitials(user.displayName || user.email?.split('@')[0] || "User")}
               </Text>
             </View>
           )}
           <TouchableOpacity style={styles.editAvatarButton}>
-            <Ionicons name="camera" size={20} color="#ffd33d" />
+            <Ionicons name="camera" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
         <Text style={styles.changePhotoText}>Change Photo</Text>
@@ -159,8 +205,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
-    borderRadius: 20,
-    backgroundColor: "#353a40",
   },
   title: {
     fontSize: 20,
@@ -171,7 +215,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
   },
   saveButtonText: {
     color: "#25292e",
@@ -195,7 +239,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -208,14 +252,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#353a40",
+    backgroundColor: "#2a2a2a",
     borderRadius: 20,
     padding: 8,
     borderWidth: 2,
-    borderColor: "#25292e",
+    borderColor: "#1a1a1a",
   },
   changePhotoText: {
-    color: "#ffd33d",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "500",
   },
@@ -233,7 +277,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#353a40",
+    backgroundColor: "#2a2a2a",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -243,7 +287,7 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   disabledInput: {
-    backgroundColor: "#2a2d32",
+    backgroundColor: "#333",
     color: "#888",
   },
   helperText: {

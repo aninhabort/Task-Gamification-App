@@ -2,12 +2,12 @@ import { FIREBASE_AUTH } from "@/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Signup from "./Signup";
 
@@ -108,7 +108,7 @@ export default function Login() {
       ) : null}
 
       {loading ? (
-        <ActivityIndicator size="large" color="#ffd33d" />
+        <ActivityIndicator size="large" color="#fff" />
       ) : (
         <>
           <TouchableOpacity style={styles.loginButton} onPress={signIn}>
@@ -131,16 +131,15 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: "center",
     marginHorizontal: 20,
-    width: "100%",
-    maxWidth: 400,
-    alignSelf: "center",
+    width: "80%",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#ffd33d",
+    color: "#fff",
     textAlign: "center",
     marginBottom: 40,
   },
@@ -156,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: "#ffd33d",
+    backgroundColor: "#fff",
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 20,
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   signupButtonText: {
-    color: "#ffd33d",
+    color: "#fff",
     fontSize: 16,
     textDecorationLine: "underline",
   },
