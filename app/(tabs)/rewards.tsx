@@ -215,7 +215,6 @@ export default function RewardScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Voucher Title</Text>
               <TextInput
                 style={styles.textInput}
                 value={newVoucherTitle}

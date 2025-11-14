@@ -5,7 +5,6 @@ import {
   Image,
   Modal,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +17,7 @@ import { useFeaturedVouchers } from "../../contexts/FeaturedVouchersContext";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import Login from "../components/Login";
+import { EmptyState } from "../ui";
 
 
 interface Voucher {
@@ -182,13 +182,11 @@ export default function HomeScreen() {
       {/* Tasks List */}
       <View style={styles.tasksContainer}>
         {tasks.length === 0 ? (
-          <View style={styles.emptyTasksContainer}>
-            <Ionicons name="clipboard-outline" size={48} color="#666" />
-            <Text style={styles.emptyTasksTitle}>Nenhuma tarefa ainda</Text>
-            <Text style={styles.emptyTasksSubtitle}>
-              Toque no botão + para adicionar sua primeira tarefa
-            </Text>
-          </View>
+          <EmptyState
+            icon="clipboard-outline"
+            title="No tasks yet"
+            subtitle="Tap the + button to add your first task"
+          />
         ) : (
           tasks.slice(0, 5).map((task, index) => (
             <TouchableOpacity
@@ -217,111 +215,148 @@ export default function HomeScreen() {
       </View>
 
       <Modal
-        visible={modalVisible}
         animationType="slide"
         transparent={true}
+        visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>New Task</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Put your task here"
-              value={taskTitle}
-              onChangeText={setTaskTitle}
-              placeholderTextColor="#aaa"
-            />
-            <Text style={styles.label}>Urgency:</Text>
-            <View style={styles.urgencyContainer}>
-              <Pressable
-                style={[
-                  styles.urgencyButton,
-                  urgency === "normal" && { backgroundColor: "#ffd33d" },
-                ]}
-                onPress={() => setUrgency("normal")}
-              >
-                <Text
-                  style={[
-                    styles.urgencyText,
-                    urgency === "normal" && { color: "#25292e" },
-                  ]}
-                >
-                  Normal
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.urgencyButton,
-                  urgency === "medium" && { backgroundColor: "#ff9800" },
-                ]}
-                onPress={() => setUrgency("medium")}
-              >
-                <Text
-                  style={[
-                    styles.urgencyText,
-                    urgency === "medium" && { color: "#fff" },
-                  ]}
-                >
-                  Medium
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.urgencyButton,
-                  urgency === "high" && { backgroundColor: "#ff3b30" },
-                ]}
-                onPress={() => setUrgency("high")}
-              >
-                <Text
-                  style={[
-                    styles.urgencyText,
-                    urgency === "high" && { color: "#fff" },
-                  ]}
-                >
-                  High
-                </Text>
-              </Pressable>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>New Task</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Type:</Text>
-            <View style={styles.typeContainer}>
-              <Pressable
-                style={[
-                  styles.typeButton,
-                  taskType === "health" && styles.typeSelected,
-                ]}
-                onPress={() => setTaskType("health")}
-              >
-                <Text style={styles.typeText}>Health</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.typeButton,
-                  taskType === "study" && styles.typeSelected,
-                ]}
-                onPress={() => setTaskType("study")}
-              >
-                <Text style={styles.typeText}>Study</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.typeButton,
-                  taskType === "work" && styles.typeSelected,
-                ]}
-                onPress={() => setTaskType("work")}
-              >
-                <Text style={styles.typeText}>Work</Text>
-              </Pressable>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.textInput}
+                value={taskTitle}
+                onChangeText={setTaskTitle}
+                placeholder="Enter your task here..."
+                placeholderTextColor="#888"
+              />
             </View>
-            <Pressable style={styles.saveButton} onPress={handleAddTask}>
-              <Text style={styles.saveButtonText}>Add</Text>
-            </Pressable>
-            <Pressable
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </Pressable>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Urgency ({calculatePoints(urgency)} points)</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoryScroll}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    urgency === "normal" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setUrgency("normal")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    urgency === "normal" && styles.categoryChipTextSelected
+                  ]}>
+                    Normal
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    urgency === "medium" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setUrgency("medium")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    urgency === "medium" && styles.categoryChipTextSelected
+                  ]}>
+                    Medium
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    urgency === "high" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setUrgency("high")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    urgency === "high" && styles.categoryChipTextSelected
+                  ]}>
+                    High
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Category</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoryScroll}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    taskType === "health" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setTaskType("health")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    taskType === "health" && styles.categoryChipTextSelected
+                  ]}>
+                    Health
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    taskType === "study" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setTaskType("study")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    taskType === "study" && styles.categoryChipTextSelected
+                  ]}>
+                    Study
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    taskType === "work" && styles.categoryChipSelected
+                  ]}
+                  onPress={() => setTaskType("work")}
+                >
+                  <Text style={[
+                    styles.categoryChipText,
+                    taskType === "work" && styles.categoryChipTextSelected
+                  ]}>
+                    Work
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addTaskButton}
+                onPress={handleAddTask}
+              >
+                <Text style={styles.addTaskButtonText}>Add Task</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -438,107 +473,9 @@ const styles = StyleSheet.create({
   featuredVouchersContainer: {
     paddingRight: 20,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "#1a1a1a",
-    padding: 24,
-    borderRadius: 16,
-    width: "90%",
-    alignItems: "stretch",
-  },
-  modalTitle: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  input: {
-    backgroundColor: "#353a40",
-    color: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  label: {
-    color: "#fff",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  urgencyContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  urgencyButton: {
-    backgroundColor: "#353a40",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  urgencySelected: {
-    backgroundColor: "#fff",
-  },
-  typeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  typeButton: {
-    backgroundColor: "#353a40",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  typeSelected: {
-    backgroundColor: "#fff",
-  },
-  typeText: {
-    color: "#25292e",
-    fontWeight: "bold",
-  },
-  saveButton: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  saveButtonText: {
-    color: "#25292e",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  cancelButton: {
-    backgroundColor: "#353a40",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  button: {
-    fontSize: 20,
-    textDecorationLine: "underline",
-    color: "#fff",
-  },
-  urgencyText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#25292e",
-    marginHorizontal: 8,
-  },
+
+
+
   pointsContainer: {
     backgroundColor: "#353a40",
     paddingHorizontal: 12,
@@ -582,24 +519,103 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#99A1C2",
   },
-  emptyTasksContainer: {
+  modalOverlay: {
     flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
   },
-  emptyTasksTitle: {
+  modalContent: {
+    backgroundColor: "#2a2a2a",
+    borderRadius: 16,
+    padding: 24,
+    width: "90%",
+    maxWidth: 400,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
-    marginTop: 16,
     marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#fff",
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  categoryScroll: {
+    maxHeight: 50,
+  },
+  categoryChip: {
+    backgroundColor: "#1a1a1a",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  categoryChipSelected: {
+    backgroundColor: "#fff",
+    borderColor: "#fff",
+  },
+  categoryChipText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  categoryChipTextSelected: {
+    color: "#1a1a1a",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 24,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#444",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
   },
-  emptyTasksSubtitle: {
-    color: "#99A1C2",
-    fontSize: 14,
-    textAlign: "center",
-    paddingHorizontal: 20,
+  addTaskButton: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginLeft: 8,
   },
+  addTaskButtonText: {
+    color: "#1a1a1a",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
 });

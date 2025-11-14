@@ -5,10 +5,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Button, Input } from "../ui";
 
 interface SignupProps {
   onBackToLogin: () => void;
@@ -64,30 +64,24 @@ export default function Signup({ onBackToLogin }: SignupProps) {
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
 
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Email"
-        placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={email}
         onChangeText={(text) => setEmail(text)}
         keyboardType="email-address"
       />
 
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Password"
-        placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={password}
         onChangeText={(text) => setPassword(text)}
         secureTextEntry={true}
       />
 
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Confirm Password"
-        placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={confirmPassword}
         onChangeText={(text) => setConfirmPassword(text)}
@@ -98,13 +92,18 @@ export default function Signup({ onBackToLogin }: SignupProps) {
         <ActivityIndicator size="large" color="#fff" />
       ) : (
         <>
-          <TouchableOpacity style={styles.signupButton} onPress={signUp}>
-            <Text style={styles.signupButtonText}>Create Account</Text>
-          </TouchableOpacity>
+          <Button
+            title="Create Account"
+            onPress={signUp}
+            style={{ marginTop: 20 }}
+          />
 
-          <TouchableOpacity style={styles.backButton} onPress={onBackToLogin}>
-            <Text style={styles.backButtonText}>
-              Already have an account? Login
+          <TouchableOpacity
+            onPress={onBackToLogin}
+            style={styles.loginLink}
+          >
+            <Text style={styles.loginText}>
+              Already have an account? <Text style={styles.loginTextBold}>Login</Text>
             </Text>
           </TouchableOpacity>
         </>
@@ -127,36 +126,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 40,
   },
-  input: {
-    marginVertical: 8,
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 15,
-    color: "#fff",
-    backgroundColor: "#353a40",
-    fontSize: 16,
-  },
-  signupButton: {
-    backgroundColor: "#fff",
-    paddingVertical: 15,
-    borderRadius: 8,
+  loginLink: {
     marginTop: 20,
     alignItems: "center",
   },
-  signupButtonText: {
-    color: "#25292e",
-    fontSize: 18,
+  loginText: {
+    color: "#aaa",
+    fontSize: 16,
+  },
+  loginTextBold: {
+    color: "#fff",
     fontWeight: "bold",
-  },
-  backButton: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    textDecorationLine: "underline",
   },
 });

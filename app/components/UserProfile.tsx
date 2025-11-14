@@ -3,7 +3,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import {
 } from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { Task, UserDataService } from "../../services/UserDataService";
+import { EmptyState, LoadingState, StatCard } from "../ui";
 
 interface UserProfileProps {
   onLogout: () => void;
@@ -93,8 +93,7 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
   if (!user) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <LoadingState text="Loading profile..." />
       </View>
     );
   }
@@ -136,20 +135,21 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
 
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.totalPoints.toLocaleString()}</Text>
-          <Text style={styles.statLabel}>Points</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.tasksCompleted}</Text>
-          <Text style={styles.statLabel}>Tasks{'\n'}Completed</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>89</Text>
-          <Text style={styles.statLabel}>Streak</Text>
-        </View>
+        <StatCard
+          title="Points"
+          value={stats.totalPoints}
+          style={{ flex: 1, marginHorizontal: 4 }}
+        />
+        <StatCard
+          title="Tasks\nCompleted"
+          value={stats.tasksCompleted}
+          style={{ flex: 1, marginHorizontal: 4 }}
+        />
+        <StatCard
+          title="Streak"
+          value={89}
+          style={{ flex: 1, marginHorizontal: 4 }}
+        />
       </View>
 
       {/* Task History Section */}
@@ -157,10 +157,11 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
         <Text style={styles.sectionTitle}>Task History</Text>
         
         {loadingTasks ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#fff" />
-            <Text style={styles.loadingTasksText}>Loading tasks...</Text>
-          </View>
+          <LoadingState 
+            text="Loading tasks..." 
+            size="small" 
+            centered={false}
+          />
         ) : completedTasks.length > 0 ? (
           completedTasks.slice(0, 5).map((task) => (
             <View key={task.id} style={styles.taskItem}>
@@ -176,13 +177,11 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
             </View>
           ))
         ) : (
-          <View style={styles.emptyStateContainer}>
-            <Ionicons name="clipboard-outline" size={48} color="#666" />
-            <Text style={styles.emptyStateTitle}>No Tasks Yet</Text>
-            <Text style={styles.emptyStateSubtitle}>
-              Complete some tasks to see your history here
-            </Text>
-          </View>
+          <EmptyState
+            icon="clipboard-outline"
+            title="No Tasks Yet"
+            subtitle="Complete some tasks to see your history here"
+          />
         )}
       </View>
     </View>
@@ -256,40 +255,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#25292e",
   },
-  loadingText: {
-    color: "#fff",
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 16,
-  },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
     paddingHorizontal: 10,
-  },
-  statCard: {
-    borderRadius: 12,
-    borderColor: "#454b52",
-    borderWidth: 2,
-    padding: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    marginHorizontal: 4,
-    minHeight: 80,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 6,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-    lineHeight: 18,
   },
   taskHistorySection: {
     flex: 1,
@@ -327,33 +297,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
   },
-  emptyStateContainer: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#fff",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateSubtitle: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 20,
-    gap: 12,
-  },
-  loadingTasksText: {
-    fontSize: 14,
-    color: "#888",
-  },
+
 });

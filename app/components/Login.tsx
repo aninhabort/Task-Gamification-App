@@ -5,10 +5,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Button, Input } from "../ui";
 import Signup from "./Signup";
 
 export default function Login() {
@@ -76,10 +76,8 @@ export default function Login() {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back</Text>
 
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Email"
-        placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={email}
         onChangeText={(text) => {
@@ -87,13 +85,10 @@ export default function Login() {
           if (errorMessage) setErrorMessage(""); // Limpar erro ao digitar
         }}
         keyboardType="email-address"
-        autoComplete="email"
       />
 
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Password"
-        placeholderTextColor="#CCCCCC"
         autoCapitalize="none"
         value={password}
         onChangeText={(text) => {
@@ -111,16 +106,18 @@ export default function Login() {
         <ActivityIndicator size="large" color="#fff" />
       ) : (
         <>
-          <TouchableOpacity style={styles.loginButton} onPress={signIn}>
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
+          <Button
+            title="Login"
+            onPress={signIn}
+            style={{ marginTop: 20 }}
+          />
 
           <TouchableOpacity
-            style={styles.signupButton}
             onPress={() => setShowSignup(true)}
+            style={styles.signupLink}
           >
-            <Text style={styles.signupButtonText}>
-              Don&apos;t have an account? Sign Up
+            <Text style={styles.signupText}>
+              Don&apos;t have an account? <Text style={styles.signupTextBold}>Sign Up</Text>
             </Text>
           </TouchableOpacity>
         </>
@@ -143,38 +140,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 40,
   },
-  input: {
-    marginVertical: 8,
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 15,
-    color: "#fff",
-    backgroundColor: "#353a40",
-    fontSize: 16,
-  },
-  loginButton: {
-    backgroundColor: "#fff",
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginTop: 20,
-    alignItems: "center",
-  },
-  loginButtonText: {
-    color: "#25292e",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  signupButton: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  signupButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    textDecorationLine: "underline",
-  },
+
   errorText: {
     color: "#ff6b6b",
     fontSize: 14,
@@ -185,5 +151,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(255, 107, 107, 0.3)",
+  },
+  signupLink: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  signupText: {
+    color: "#aaa",
+    fontSize: 16,
+  },
+  signupTextBold: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
