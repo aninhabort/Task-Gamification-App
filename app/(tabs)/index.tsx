@@ -17,7 +17,7 @@ import { useFeaturedVouchers } from "../../contexts/FeaturedVouchersContext";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import Login from "../components/Login";
-import { EmptyState } from "../ui";
+import { EmptyState } from "../ui/components";
 
 
 interface Voucher {

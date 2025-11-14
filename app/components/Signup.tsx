@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Button, Input } from "../ui";
+import { Button, Input } from "../ui/components";
 
 interface SignupProps {
   onBackToLogin: () => void;

@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Button, Input } from "../ui";
+import { Button, Input } from "../ui/components";
 import Signup from "./Signup";
 
 export default function Login() {

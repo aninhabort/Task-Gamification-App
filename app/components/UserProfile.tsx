@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { Task, UserDataService } from "../../services/UserDataService";
-import { EmptyState, LoadingState, StatCard } from "../ui";
+import { EmptyState, LoadingState, StatCard } from "../ui/components";
 
 interface UserProfileProps {
   onLogout: () => void;
