@@ -34,12 +34,11 @@ export default function Signup({ onBackToLogin }: SignupProps) {
 
     setLoading(true);
     try {
-      const response = await createUserWithEmailAndPassword(
+      await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      // Account created successfully - AuthManager will handle the navigation
     } catch (error: any) {
       console.error("Signup error:", error);
       let errorMessage = "Signup failed. Please try again.";
