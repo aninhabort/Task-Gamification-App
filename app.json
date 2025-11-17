@@ -37,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "firebaseApiKey": "AIzaSyD4o-8nrM9uRBEg8MbMUeFtzCmo91usD64",
+      "firebaseAuthDomain": "task-gamification-app.firebaseapp.com",
+      "firebaseProjectId": "task-gamification-app",
+      "firebaseStorageBucket": "task-gamification-app.firebasestorage.app",
+      "firebaseMessagingSenderId": "870952656231",
+      "firebaseAppId": "1:870952656231:web:e4829ece7e203429d2e3c2",
+      "firebaseMeasurementId": "G-2W623P35S1"
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Analytics } from "../../utils/analytics";
 import { Button, Input } from "../ui/components";
 
 interface SignupProps {
@@ -39,6 +40,7 @@ export default function Signup({ onBackToLogin }: SignupProps) {
         email,
         password
       );
+      Analytics.signup('email');
     } catch (error: any) {
       console.error("Signup error:", error);
       let errorMessage = "Signup failed. Please try again.";

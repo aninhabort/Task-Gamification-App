@@ -2,6 +2,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
+import { setAnalyticsUserId } from "../../utils/analytics";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 export default function TabLayout() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
@@ -9,12 +11,15 @@ export default function TabLayout() {
   React.useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user) => {
       setIsAuthenticated(!!user);
+      // Define o user ID no analytics quando o usuário faz login
+      setAnalyticsUserId(user?.uid || null);
     });
     return unsubscribe;
   }, []);
 
   return (
-    <Tabs
+    <ErrorBoundary>
+      <Tabs
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: "#fff",
         headerShown: false,
@@ -62,5 +67,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </ErrorBoundary>
   );
 }

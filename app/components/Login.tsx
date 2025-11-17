@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Analytics } from "../../utils/analytics";
 import { Button, Input } from "../ui/components";
 import Signup from "./Signup";
 
@@ -42,6 +43,7 @@ export default function Login() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
+      Analytics.login('email');
       // Login successful - AuthManager will handle the navigation
     } catch (error: any) {
       console.error("Login error:", error);

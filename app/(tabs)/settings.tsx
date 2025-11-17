@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
+import { Analytics } from "../../utils/analytics";
 
 export default function SettingsScreen() {
   const { resetStats, reloadTasks } = useUserStatsContext();
@@ -28,6 +29,7 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               await FIREBASE_AUTH.signOut();
+              Analytics.logout();
             } catch (error) {
               console.error("Error signing out:", error);
               Alert.alert("Error", "Failed to logout. Please try again.");

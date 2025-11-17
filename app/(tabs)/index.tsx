@@ -16,6 +16,7 @@ import {
 import { useFeaturedVouchers } from "../../contexts/FeaturedVouchersContext";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
+import { Analytics } from "../../utils/analytics";
 import Login from "../components/Login";
 import { EmptyState } from "../ui/components";
 
@@ -89,8 +90,12 @@ export default function HomeScreen() {
   }, []);
 
   function handleCompleteTask(taskId: string, points: number) {
+    const task = tasks.find(t => t.id === taskId);
     addCompletedTask(points);
     completeTask(taskId);
+    if (task) {
+      Analytics.taskCompleted(task.title, points);
+    }
   }
 
   function calculatePoints(urgency: string) {
@@ -108,6 +113,7 @@ export default function HomeScreen() {
     if (!taskTitle) return;
     const points = calculatePoints(urgency);
     addTask({ title: taskTitle, points, type: taskType, urgency });
+    Analytics.taskCreated(taskTitle, points);
     setTaskTitle("");
     setUrgency("normal");
     setTaskType("study");
@@ -137,6 +143,7 @@ export default function HomeScreen() {
             });
 
             if (success) {
+              Analytics.voucherRedeemed(voucher.title, voucher.points);
               Alert.alert(
                 "Success!",
                 `You have successfully redeemed "${voucher.title}"!`
