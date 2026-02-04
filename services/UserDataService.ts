@@ -372,6 +372,17 @@ export class UserDataService {
   // Resetar dados do usuário (para testes)
   static async resetUserData(userId: string): Promise<void> {
     try {
+      // Se estiver usando modo local, resetar apenas no armazenamento local
+      if (this.useLocalFallback) {
+        await LocalStorageService.updateUserStats(userId, {
+          tasksCompleted: 0,
+          totalPoints: 0,
+          vouchersRedeemed: 0,
+        });
+        await LocalStorageService.clearUserActivityData(userId);
+        return;
+      }
+
       // Resetar estatísticas
       await this.updateUserStats(userId, {
         tasksCompleted: 0,
@@ -394,6 +405,13 @@ export class UserDataService {
       
       const deleteVoucherPromises = vouchersSnapshot.docs.map(doc => deleteDoc(doc.ref));
       await Promise.all(deleteVoucherPromises);
+
+      // Limpar caches locais se existirem
+      try {
+        await LocalStorageService.clearUserActivityData(userId);
+      } catch (localError) {
+        console.error('UserDataService - Local activity data cleanup failed:', localError);
+      }
     } catch (error) {
       console.error('Error resetting user data:', error);
       throw error;

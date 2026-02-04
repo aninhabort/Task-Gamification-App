@@ -212,6 +212,20 @@ export class LocalStorageService {
       await AsyncStorage.multiRemove([
         this.KEYS.USER_DATA + userId,
         this.KEYS.USER_TASKS + userId,
+        this.KEYS.COMPLETED_TASKS + userId,
+        this.KEYS.REDEEMED_VOUCHERS + userId,
+      ]);
+    } catch {
+      // Fail silently
+    }
+  }
+
+  // Limpar apenas dados de atividade (tasks, histórico e vouchers) de um usuário
+  static async clearUserActivityData(userId: string): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove([
+        this.KEYS.USER_TASKS + userId,
+        this.KEYS.COMPLETED_TASKS + userId,
         this.KEYS.REDEEMED_VOUCHERS + userId,
       ]);
     } catch {
