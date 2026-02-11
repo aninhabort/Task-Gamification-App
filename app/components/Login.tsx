@@ -22,13 +22,13 @@ export default function Login() {
   const signIn = async () => {
     // Limpar mensagem de erro anterior
     setErrorMessage("");
-    
+
     // Validações básicas
     if (!email.trim()) {
       setErrorMessage("Please enter your email address.");
       return;
     }
-    
+
     if (!password.trim()) {
       setErrorMessage("Please enter your password.");
       return;
@@ -49,7 +49,8 @@ export default function Login() {
         "Login failed. Please check your credentials and try again.";
 
       if (error.code === "auth/invalid-credential") {
-        errorMessage = "Invalid email or password. Please verify your credentials. If you don't have an account, click 'Sign Up' below.";
+        errorMessage =
+          "Invalid email or password. Please verify your credentials. If you don't have an account, click 'Sign Up' below.";
       } else if (error.code === "auth/user-not-found") {
         errorMessage = "No account found with this email address.";
       } else if (error.code === "auth/wrong-password") {
@@ -59,7 +60,8 @@ export default function Login() {
       } else if (error.code === "auth/user-disabled") {
         errorMessage = "This account has been disabled.";
       } else if (error.code === "auth/too-many-requests") {
-        errorMessage = "Too many failed login attempts. Please try again later.";
+        errorMessage =
+          "Too many failed login attempts. Please try again later.";
       }
 
       setErrorMessage(errorMessage);
@@ -131,11 +133,9 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: "center",
-    marginHorizontal: 20,
-    width: "100%",
-    maxWidth: 400,
-    alignSelf: "center",
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 28,

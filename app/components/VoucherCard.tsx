@@ -1,17 +1,11 @@
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
 interface VoucherCardProps {
   title: string;
   points: number;
-  image: string;
+  image?: string;
+  emoji?: string;
   compact?: boolean;
   voucherId?: string;
 }
@@ -20,8 +14,9 @@ export default function VoucherCard({
   title,
   points,
   image,
+  emoji = "🎁",
   compact = false,
-  voucherId = title.toLowerCase().replace(/\s+/g, '-'),
+  voucherId = title.toLowerCase().replace(/\s+/g, "-"),
 }: VoucherCardProps) {
   const { stats, redeemVoucher } = useUserStatsContext();
 
@@ -29,7 +24,7 @@ export default function VoucherCard({
     if (stats.totalPoints < points) {
       Alert.alert(
         "Insufficient Points",
-        `You need ${points} points to redeem this voucher. You currently have ${stats.totalPoints} points.`
+        `You need ${points} points to redeem this voucher. You currently have ${stats.totalPoints} points.`,
       );
       return;
     }
@@ -48,17 +43,17 @@ export default function VoucherCard({
                 "Success!",
                 `You have successfully redeemed "${title}"! Remaining points: ${
                   stats.totalPoints - points
-                }`
+                }`,
               );
             } else {
               Alert.alert(
                 "Error",
-                "Failed to redeem voucher. Please try again."
+                "Failed to redeem voucher. Please try again.",
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -67,7 +62,9 @@ export default function VoucherCard({
   if (compact) {
     return (
       <View style={styles.compactCard}>
-        <Image source={{ uri: image }} style={styles.compactImage} />
+        <View style={styles.compactImageContainer}>
+          <Text style={styles.compactEmoji}>{emoji}</Text>
+        </View>
         <View style={styles.compactContent}>
           <Text style={styles.compactTitle}>{title}</Text>
           <Text style={styles.compactPoints}>{points} pts</Text>
@@ -78,7 +75,9 @@ export default function VoucherCard({
 
   return (
     <View style={styles.card}>
-      <Image source={{ uri: image }} style={styles.image} />
+      <View style={styles.imageContainer}>
+        <Text style={styles.emoji}>{emoji}</Text>
+      </View>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.points}>{points} pontos</Text>
       <TouchableOpacity
@@ -105,12 +104,17 @@ const styles = StyleSheet.create({
     width: 200,
     padding: 12,
   },
-  image: {
+  imageContainer: {
     width: 140,
     height: 140,
     borderRadius: 16,
     marginBottom: 12,
     backgroundColor: "#ffd33d",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emoji: {
+    fontSize: 60,
   },
   title: {
     color: "#fff",
@@ -151,12 +155,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 8,
   },
-  compactImage: {
+  compactImageContainer: {
     width: 50,
     height: 50,
     borderRadius: 8,
     backgroundColor: "#ffd33d",
     marginRight: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  compactEmoji: {
+    fontSize: 28,
   },
   compactContent: {
     flex: 1,

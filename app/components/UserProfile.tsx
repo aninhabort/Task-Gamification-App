@@ -3,12 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 import { Task, UserDataService } from "../../services/UserDataService";
@@ -37,7 +37,7 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
       const tasks = await UserDataService.getCompletedTasks(userId);
       setCompletedTasks(tasks);
     } catch (error) {
-      console.error('Error loading completed tasks:', error);
+      console.error("Error loading completed tasks:", error);
       setCompletedTasks([]);
     } finally {
       setLoadingTasks(false);
@@ -76,7 +76,10 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
       {/* Header with settings button */}
       <View style={styles.header}>
         <View style={styles.spacer} />
-        <TouchableOpacity style={styles.settingsIconButton} onPress={navigateToSettings}>
+        <TouchableOpacity
+          style={styles.settingsIconButton}
+          onPress={navigateToSettings}
+        >
           <Ionicons name="settings-outline" size={24} color="#ffd33d" />
         </TouchableOpacity>
       </View>
@@ -93,7 +96,10 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
               </Text>
             </View>
           )}
-          <TouchableOpacity style={styles.editProfileButton} onPress={navigateToEditProfile}>
+          <TouchableOpacity
+            style={styles.editProfileButton}
+            onPress={navigateToEditProfile}
+          >
             <Ionicons name="pencil-outline" size={16} color="#ffd33d" />
           </TouchableOpacity>
         </View>
@@ -109,13 +115,15 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.totalPoints.toLocaleString()}</Text>
+          <Text style={styles.statNumber}>
+            {stats.totalPoints.toLocaleString()}
+          </Text>
           <Text style={styles.statLabel}>Points</Text>
         </View>
 
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.tasksCompleted}</Text>
-          <Text style={styles.statLabel}>Tasks{'\n'}Completed</Text>
+          <Text style={styles.statLabel}>Tasks{"\n"}Completed</Text>
         </View>
 
         <View style={styles.statCard}>
@@ -127,7 +135,7 @@ export default function UserProfile({ onLogout }: UserProfileProps) {
       {/* Task History Section */}
       <View style={styles.taskHistorySection}>
         <Text style={styles.sectionTitle}>Task History</Text>
-        
+
         {loadingTasks ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#ffd33d" />
@@ -165,7 +173,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292e",
-    paddingHorizontal: 10,
+    paddingHorizontal: 24,
     paddingTop: 60,
     width: "100%",
   },

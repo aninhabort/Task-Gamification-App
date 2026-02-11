@@ -1,5 +1,17 @@
 import { useRef, useState } from "react";
-import { Alert, Animated, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    Alert,
+    Animated,
+    Modal,
+    PanResponder,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
 interface Voucher {
@@ -11,7 +23,12 @@ interface Voucher {
 }
 
 // Componente para item com swipe
-const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
+const SwipeableRewardItem = ({
+  voucher,
+  onAddToFeatured,
+  onRedeem,
+  stats,
+}: {
   voucher: Voucher;
   onAddToFeatured: (voucher: Voucher) => void;
   onRedeem: (voucher: Voucher) => void;
@@ -29,14 +46,15 @@ const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
         pan.setOffset((pan as any)._value);
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dx > 0) { // Only allow swipe to the right
+        if (gestureState.dx > 0) {
+          // Only allow swipe to the right
           pan.setValue(gestureState.dx);
           setShowStarIcon(gestureState.dx > 60);
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
         pan.flattenOffset();
-        
+
         if (gestureState.dx > 80) {
           // Trigger add to featured
           Animated.spring(pan, {
@@ -54,51 +72,68 @@ const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
           setShowStarIcon(false);
         }
       },
-    })
+    }),
   ).current;
 
   return (
     <View style={styles.swipeContainer}>
       {/* Background with star icon */}
       <View style={styles.swipeBackground}>
-        <Animated.View style={[
-          styles.starIconContainer,
-          {
-            opacity: showStarIcon ? 1 : 0,
-            transform: [{
-              scale: showStarIcon ? 1 : 0.5
-            }]
-          }
-        ]}>
+        <Animated.View
+          style={[
+            styles.starIconContainer,
+            {
+              opacity: showStarIcon ? 1 : 0,
+              transform: [
+                {
+                  scale: showStarIcon ? 1 : 0.5,
+                },
+              ],
+            },
+          ]}
+        >
           <Text style={styles.starIcon}>⭐</Text>
           <Text style={styles.starText}>Add to Featured</Text>
         </Animated.View>
       </View>
-      
+
       {/* Main content */}
       <Animated.View
         style={[
           styles.rewardItem,
           {
-            transform: [{
-              translateX: pan
-            }]
-          }
+            transform: [
+              {
+                translateX: pan,
+              },
+            ],
+          },
         ]}
         {...panResponder.panHandlers}
       >
         <View style={styles.rewardIconContainer}>
           <Text style={styles.rewardIcon}>
-            {voucher.category === 'Café / Snack Break' ? '☕' : 
-             voucher.category === 'Lazer' ? '🎬' :
-             voucher.category === 'Self-Care' ? '💆' :
-             voucher.category === 'Educação' ? '📚' :
-             voucher.category === 'Fitness' ? '💪' :
-             voucher.category === 'Tecnologia' ? '💻' :
-             voucher.category === 'Mystery Box' ? '🎁' :
-             voucher.category === 'Premium / Raro' ? '💎' :
-             voucher.category === 'Community Reward' ? '🏆' :
-             voucher.category === 'Charity / Good Deed' ? '❤️' : '🎁'}
+            {voucher.category === "Café / Snack Break"
+              ? "☕"
+              : voucher.category === "Lazer"
+                ? "🎬"
+                : voucher.category === "Self-Care"
+                  ? "💆"
+                  : voucher.category === "Educação"
+                    ? "📚"
+                    : voucher.category === "Fitness"
+                      ? "💪"
+                      : voucher.category === "Tecnologia"
+                        ? "💻"
+                        : voucher.category === "Mystery Box"
+                          ? "🎁"
+                          : voucher.category === "Premium / Raro"
+                            ? "💎"
+                            : voucher.category === "Community Reward"
+                              ? "🏆"
+                              : voucher.category === "Charity / Good Deed"
+                                ? "❤️"
+                                : "🎁"}
           </Text>
         </View>
         <View style={styles.rewardContent}>
@@ -106,24 +141,27 @@ const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
           <Text style={styles.rewardPoints}>{voucher.points} points</Text>
         </View>
         <View style={styles.rewardActions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.featureButton}
             onPress={() => onAddToFeatured(voucher)}
           >
             <Text style={styles.featureButtonText}>⭐</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.redeemButton,
-              stats.totalPoints < voucher.points && styles.redeemButtonDisabled
+              stats.totalPoints < voucher.points && styles.redeemButtonDisabled,
             ]}
             onPress={() => onRedeem(voucher)}
             disabled={stats.totalPoints < voucher.points}
           >
-            <Text style={[
-              styles.redeemButtonText,
-              stats.totalPoints < voucher.points && styles.redeemButtonTextDisabled
-            ]}>
+            <Text
+              style={[
+                styles.redeemButtonText,
+                stats.totalPoints < voucher.points &&
+                  styles.redeemButtonTextDisabled,
+              ]}
+            >
               Redeem
             </Text>
           </TouchableOpacity>
@@ -135,21 +173,23 @@ const SwipeableRewardItem = ({ voucher, onAddToFeatured, onRedeem, stats }: {
 
 export default function RewardScreen() {
   const { stats, redeemVoucher } = useUserStatsContext();
-  
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [voucherTitle, setVoucherTitle] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Café / Snack Break");
-  
+  const [selectedCategory, setSelectedCategory] =
+    useState("Café / Snack Break");
+
   const [featuredVouchers, setFeaturedVouchers] = useState<Voucher[]>([
     {
       id: "featured-1",
       title: "Mystery Box Especial",
       points: 1000,
       category: "Mystery Box",
-      description: "Voucher aleatório (qualquer categoria) - Pode vir algo comum ou raro",
+      description:
+        "Voucher aleatório (qualquer categoria) - Pode vir algo comum ou raro",
     },
     {
-      id: "featured-2", 
+      id: "featured-2",
       title: "Experiência Premium",
       points: 2000,
       category: "Premium / Raro",
@@ -206,7 +246,7 @@ export default function RewardScreen() {
     if (stats.totalPoints < voucher.points) {
       Alert.alert(
         "Insufficient Points",
-        `You need ${voucher.points} points to redeem this voucher. You currently have ${stats.totalPoints} points.`
+        `You need ${voucher.points} points to redeem this voucher. You currently have ${stats.totalPoints} points.`,
       );
       return;
     }
@@ -227,28 +267,28 @@ export default function RewardScreen() {
             if (success) {
               Alert.alert(
                 "Success!",
-                `You have successfully redeemed "${voucher.title}"!`
+                `You have successfully redeemed "${voucher.title}"!`,
               );
             } else {
               Alert.alert(
                 "Error",
-                "Failed to redeem voucher. Please try again."
+                "Failed to redeem voucher. Please try again.",
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
   const calculateVoucherPoints = (category: string, title: string): number => {
     const basePoints = {
       "Café / Snack Break": 150,
-      "Lazer": 300,
+      Lazer: 300,
       "Self-Care": 500,
-      "Educação": 700,
-      "Fitness": 900,
-      "Tecnologia": 1200,
+      Educação: 700,
+      Fitness: 900,
+      Tecnologia: 1200,
       "Mystery Box": 1000,
       "Premium / Raro": 2000,
       "Community Reward": 100,
@@ -267,7 +307,7 @@ export default function RewardScreen() {
       Alert.alert("Error", "Please enter a voucher title");
       return;
     }
-    
+
     createVoucher(voucherTitle.trim(), selectedCategory);
     setShowAddModal(false);
     setVoucherTitle("");
@@ -284,37 +324,45 @@ export default function RewardScreen() {
       description: `${title} - ${category} voucher worth ${points} points`,
     };
 
-    setAllVouchers(prev => [...prev, newVoucher]);
-    
+    setAllVouchers((prev) => [...prev, newVoucher]);
+
     Alert.alert(
       "Voucher Created!",
-      `"${title}" has been added with ${points} points based on the ${category} category.`
+      `"${title}" has been added with ${points} points based on the ${category} category.`,
     );
   };
 
   const addToFeatured = (voucher: Voucher) => {
     // Check if voucher is already featured
-    const isAlreadyFeatured = featuredVouchers.some(fv => fv.id === voucher.id);
-    
+    const isAlreadyFeatured = featuredVouchers.some(
+      (fv) => fv.id === voucher.id,
+    );
+
     if (isAlreadyFeatured) {
-      Alert.alert("Already Featured", "This voucher is already in the Featured section!");
+      Alert.alert(
+        "Already Featured",
+        "This voucher is already in the Featured section!",
+      );
       return;
     }
 
     // Limit featured vouchers to 6
     if (featuredVouchers.length >= 6) {
       Alert.alert(
-        "Featured Limit Reached", 
-        "You can only have 6 featured vouchers. Remove one first to add a new one."
+        "Featured Limit Reached",
+        "You can only have 6 featured vouchers. Remove one first to add a new one.",
       );
       return;
     }
 
-    setFeaturedVouchers(prev => [...prev, { ...voucher, id: `featured-${voucher.id}` }]);
-    
+    setFeaturedVouchers((prev) => [
+      ...prev,
+      { ...voucher, id: `featured-${voucher.id}` },
+    ]);
+
     Alert.alert(
       "Added to Featured!",
-      `"${voucher.title}" has been added to the Featured section.`
+      `"${voucher.title}" has been added to the Featured section.`,
     );
   };
 
@@ -328,295 +376,414 @@ export default function RewardScreen() {
           text: "Remove",
           style: "destructive",
           onPress: () => {
-            setFeaturedVouchers(prev => prev.filter(v => v.id !== voucherId));
+            setFeaturedVouchers((prev) =>
+              prev.filter((v) => v.id !== voucherId),
+            );
             Alert.alert("Removed!", "Voucher removed from Featured section.");
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-      {/* Featured Section */}
-      <View style={styles.featuredSection}>
-        <Text style={styles.featuredTitle}>Featured</Text>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.featuredContent}
-        >
-          {featuredVouchers.map((voucher) => (
-            <TouchableOpacity 
-              key={voucher.id} 
-              style={styles.featuredCard}
-              onPress={() => handleRedeemVoucher(voucher)}
-            >
-              <View style={styles.featuredImageContainer}>
-                <Text style={styles.featuredImageText}>
-                  {voucher.category === 'Café / Snack Break' ? '☕' : 
-                   voucher.category === 'Lazer' ? '🎬' :
-                   voucher.category === 'Self-Care' ? '💆' :
-                   voucher.category === 'Educação' ? '📚' :
-                   voucher.category === 'Fitness' ? '💪' :
-                   voucher.category === 'Tecnologia' ? '💻' :
-                   voucher.category === 'Mystery Box' ? '🎁' :
-                   voucher.category === 'Premium / Raro' ? '💎' :
-                   voucher.category === 'Community Reward' ? '🏆' :
-                   voucher.category === 'Charity / Good Deed' ? '❤️' : '🎁'}
-                </Text>
-              </View>
-              <TouchableOpacity 
-                style={styles.removeFeaturedButton}
-                onPress={() => removeFromFeatured(voucher.id)}
-              >
-                <Text style={styles.removeFeaturedText}>✕</Text>
-              </TouchableOpacity>
-              <View style={styles.featuredInfo}>
-                <Text style={styles.featuredPoints}>{voucher.title}</Text>
-                <Text style={styles.featuredLabel}>{voucher.points} points</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* All Rewards Section */}
-      <View style={styles.allRewardsSection}>
-        <View style={styles.allRewardsHeader}>
-          <Text style={styles.allRewardsTitle}>All Rewards</Text>
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={addNewVoucher}
+        {/* Featured Section */}
+        <View style={styles.featuredSection}>
+          <Text style={styles.featuredTitle}>Featured</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.featuredContent}
           >
-            <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
+            {featuredVouchers.map((voucher) => (
+              <TouchableOpacity
+                key={voucher.id}
+                style={styles.featuredCard}
+                onPress={() => handleRedeemVoucher(voucher)}
+              >
+                <View style={styles.featuredImageContainer}>
+                  <Text style={styles.featuredImageText}>
+                    {voucher.category === "Café / Snack Break"
+                      ? "☕"
+                      : voucher.category === "Lazer"
+                        ? "🎬"
+                        : voucher.category === "Self-Care"
+                          ? "💆"
+                          : voucher.category === "Educação"
+                            ? "📚"
+                            : voucher.category === "Fitness"
+                              ? "💪"
+                              : voucher.category === "Tecnologia"
+                                ? "💻"
+                                : voucher.category === "Mystery Box"
+                                  ? "🎁"
+                                  : voucher.category === "Premium / Raro"
+                                    ? "💎"
+                                    : voucher.category === "Community Reward"
+                                      ? "🏆"
+                                      : voucher.category ===
+                                          "Charity / Good Deed"
+                                        ? "❤️"
+                                        : "🎁"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeFeaturedButton}
+                  onPress={() => removeFromFeatured(voucher.id)}
+                >
+                  <Text style={styles.removeFeaturedText}>✕</Text>
+                </TouchableOpacity>
+                <View style={styles.featuredInfo}>
+                  <Text style={styles.featuredPoints}>{voucher.title}</Text>
+                  <Text style={styles.featuredLabel}>
+                    {voucher.points} points
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
-        
-        {allVouchers.map((voucher) => (
-          <SwipeableRewardItem
-            key={voucher.id}
-            voucher={voucher}
-            onAddToFeatured={addToFeatured}
-            onRedeem={handleRedeemVoucher}
-            stats={stats}
-          />
-        ))}
-      </View>
+
+        {/* All Rewards Section */}
+        <View style={styles.allRewardsSection}>
+          <View style={styles.allRewardsHeader}>
+            <Text style={styles.allRewardsTitle}>All Rewards</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addNewVoucher}>
+              <Text style={styles.addButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          {allVouchers.map((voucher) => (
+            <SwipeableRewardItem
+              key={voucher.id}
+              voucher={voucher}
+              onAddToFeatured={addToFeatured}
+              onRedeem={handleRedeemVoucher}
+              stats={stats}
+            />
+          ))}
+        </View>
       </ScrollView>
 
       {/* Add Voucher Modal */}
-    <Modal
-      visible={showAddModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowAddModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Add New Voucher</Text>
-          
-          <Text style={styles.modalLabel}>Title:</Text>
-          <TextInput
-            style={styles.modalInput}
-            value={voucherTitle}
-            onChangeText={setVoucherTitle}
-            placeholder="Enter voucher title"
-            placeholderTextColor="#888"
-          />
+      <Modal
+        visible={showAddModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Add New Voucher</Text>
 
-          <Text style={styles.modalLabel}>Category:</Text>
-          <View style={styles.categoryContainer}>
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Café / Snack Break" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Café / Snack Break")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Café / Snack Break" && styles.categoryTextSelected,
-              ]}>Café / Snack Break</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Café / Snack Break" && styles.categoryPointsSelected,
-              ]}>150 pts</Text>
-            </Pressable>
-            
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Lazer" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Lazer")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Lazer" && styles.categoryTextSelected,
-              ]}>Lazer</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Lazer" && styles.categoryPointsSelected,
-              ]}>300 pts</Text>
-            </Pressable>
+            <Text style={styles.modalLabel}>Title:</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={voucherTitle}
+              onChangeText={setVoucherTitle}
+              placeholder="Enter voucher title"
+              placeholderTextColor="#888"
+            />
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Self-Care" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Self-Care")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Self-Care" && styles.categoryTextSelected,
-              ]}>Self-Care</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Self-Care" && styles.categoryPointsSelected,
-              ]}>500 pts</Text>
-            </Pressable>
+            <Text style={styles.modalLabel}>Category:</Text>
+            <View style={styles.categoryContainer}>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Café / Snack Break" &&
+                    styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Café / Snack Break")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Café / Snack Break" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Café / Snack Break
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Café / Snack Break" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  150 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Educação" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Educação")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Educação" && styles.categoryTextSelected,
-              ]}>Educação</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Educação" && styles.categoryPointsSelected,
-              ]}>700 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Lazer" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Lazer")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Lazer" && styles.categoryTextSelected,
+                  ]}
+                >
+                  Lazer
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Lazer" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  300 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Fitness" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Fitness")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Fitness" && styles.categoryTextSelected,
-              ]}>Fitness</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Fitness" && styles.categoryPointsSelected,
-              ]}>900 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Self-Care" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Self-Care")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Self-Care" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Self-Care
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Self-Care" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  500 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Tecnologia" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Tecnologia")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Tecnologia" && styles.categoryTextSelected,
-              ]}>Tecnologia</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Tecnologia" && styles.categoryPointsSelected,
-              ]}>1200 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Educação" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Educação")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Educação" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Educação
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Educação" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  700 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Mystery Box" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Mystery Box")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Mystery Box" && styles.categoryTextSelected,
-              ]}>Mystery Box</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Mystery Box" && styles.categoryPointsSelected,
-              ]}>1000 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Fitness" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Fitness")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Fitness" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Fitness
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Fitness" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  900 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Premium / Raro" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Premium / Raro")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Premium / Raro" && styles.categoryTextSelected,
-              ]}>Premium / Raro</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Premium / Raro" && styles.categoryPointsSelected,
-              ]}>2000 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Tecnologia" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Tecnologia")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Tecnologia" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Tecnologia
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Tecnologia" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  1200 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Community Reward" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Community Reward")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Community Reward" && styles.categoryTextSelected,
-              ]}>Community Reward</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Community Reward" && styles.categoryPointsSelected,
-              ]}>100 pts</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Mystery Box" && styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Mystery Box")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Mystery Box" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Mystery Box
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Mystery Box" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  1000 pts
+                </Text>
+              </Pressable>
 
-            <Pressable
-              style={[
-                styles.categoryButton,
-                selectedCategory === "Charity / Good Deed" && styles.categorySelected,
-              ]}
-              onPress={() => setSelectedCategory("Charity / Good Deed")}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === "Charity / Good Deed" && styles.categoryTextSelected,
-              ]}>Charity / Good Deed</Text>
-              <Text style={[
-                styles.categoryPoints,
-                selectedCategory === "Charity / Good Deed" && styles.categoryPointsSelected,
-              ]}>300 pts</Text>
-            </Pressable>
-          </View>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Premium / Raro" &&
+                    styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Premium / Raro")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Premium / Raro" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Premium / Raro
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Premium / Raro" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  2000 pts
+                </Text>
+              </Pressable>
 
-          <View style={styles.modalButtons}>
-            <Pressable style={styles.modalSaveButton} onPress={handleCreateVoucher}>
-              <Text style={styles.modalSaveButtonText}>Create</Text>
-            </Pressable>
-            <Pressable 
-              style={styles.modalCancelButton}
-              onPress={() => {
-                setShowAddModal(false);
-                setVoucherTitle("");
-                setSelectedCategory("Café / Snack Break");
-              }}
-            >
-              <Text style={styles.modalCancelButtonText}>Cancel</Text>
-            </Pressable>
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Community Reward" &&
+                    styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Community Reward")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Community Reward" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Community Reward
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Community Reward" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  100 pts
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === "Charity / Good Deed" &&
+                    styles.categorySelected,
+                ]}
+                onPress={() => setSelectedCategory("Charity / Good Deed")}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === "Charity / Good Deed" &&
+                      styles.categoryTextSelected,
+                  ]}
+                >
+                  Charity / Good Deed
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryPoints,
+                    selectedCategory === "Charity / Good Deed" &&
+                      styles.categoryPointsSelected,
+                  ]}
+                >
+                  300 pts
+                </Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={styles.modalSaveButton}
+                onPress={handleCreateVoucher}
+              >
+                <Text style={styles.modalSaveButtonText}>Create</Text>
+              </Pressable>
+              <Pressable
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowAddModal(false);
+                  setVoucherTitle("");
+                  setSelectedCategory("Café / Snack Break");
+                }}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
     </View>
   );
 }
@@ -628,7 +795,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   featuredSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
     marginBottom: 40,
   },
   featuredTitle: {
@@ -638,7 +805,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   featuredContent: {
-    paddingRight: 20,
+    paddingRight: 28,
   },
   featuredCard: {
     width: 180,
@@ -672,7 +839,7 @@ const styles = StyleSheet.create({
     color: "#25292e",
   },
   allRewardsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
     paddingBottom: 40,
   },
   allRewardsHeader: {

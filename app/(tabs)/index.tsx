@@ -23,15 +23,15 @@ export default function HomeScreen() {
   const [taskTitle, setTaskTitle] = React.useState("");
   const [urgency, setUrgency] = React.useState("normal");
   const [taskType, setTaskType] = React.useState("study");
-  const { stats, addCompletedTask, tasks, addTask, completeTask } = useUserStatsContext();
-  
+  const { stats, addCompletedTask, tasks, addTask, completeTask } =
+    useUserStatsContext();
+
   // Debug: log para verificar se as tasks estão sendo carregadas
-  React.useEffect(() => {
-  }, [tasks, stats]);
+  React.useEffect(() => {}, [tasks, stats]);
 
   // Verificar estado de autenticação
   const [authUser, setAuthUser] = React.useState<any>(null);
-  
+
   React.useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged((user: any) => {
       setAuthUser(user);
@@ -43,8 +43,6 @@ export default function HomeScreen() {
     addCompletedTask(points);
     completeTask(taskId);
   }
-
-
 
   function calculatePoints(urgency: string) {
     switch (urgency) {
@@ -70,7 +68,12 @@ export default function HomeScreen() {
   // Se o usuário não estiver autenticado, mostrar tela de login
   if (!authUser) {
     return (
-      <View style={[styles.loginContainer, Platform.OS === 'web' && styles.webLoginContainer]}>
+      <View
+        style={[
+          styles.loginContainer,
+          Platform.OS === "web" && styles.webLoginContainer,
+        ]}
+      >
         <Login />
       </View>
     );
@@ -89,7 +92,7 @@ export default function HomeScreen() {
           <Ionicons name="add-circle" size={40} color="#ffd33d" />
         </TouchableOpacity>
       </View>
-      
+
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -199,7 +202,7 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
-      
+
       {tasks.length === 0 ? (
         <View style={styles.emptyTasksContainer}>
           <Text style={styles.emptyTasksTitle}>No tasks yet!</Text>
@@ -215,7 +218,11 @@ export default function HomeScreen() {
           data={tasks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TaskCard title={item.title} points={item.points} type={item.type} />
+            <TaskCard
+              title={item.title}
+              points={item.points}
+              type={item.type}
+            />
           )}
           renderHiddenItem={({ item }) => (
             <View style={styles.rowBack}>
@@ -241,22 +248,22 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
         >
           <VoucherCard
-            title="Discount Voucher"
-            points={100}
-            image="https://via.placeholder.com/150"
-            voucherId="discount-voucher"
+            title="Voucher de café"
+            points={150}
+            emoji="☕"
+            voucherId="voucher-cafe"
           />
           <VoucherCard
-            title="Coffee Voucher"
-            points={80}
-            image="https://via.placeholder.com/150/ffd33d/25292e"
-            voucherId="coffee-voucher"
+            title="Aluguel de filme"
+            points={300}
+            emoji="🎬"
+            voucherId="aluguel-filme"
           />
           <VoucherCard
-            title="Book Voucher"
-            points={120}
-            image="https://via.placeholder.com/150/353a40/ffd33d"
-            voucherId="book-voucher"
+            title="Produto de beleza"
+            points={500}
+            emoji="💆"
+            voucherId="produto-beleza"
           />
         </ScrollView>
       </View>
@@ -280,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#25292e",
     justifyContent: "flex-start",
     paddingTop: 60,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
   },
   header: {
     flexDirection: "row",
@@ -291,7 +298,7 @@ const styles = StyleSheet.create({
   text: {
     color: "#fff",
     fontSize: 24,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   tasksScroll: {
     maxHeight: 440,
@@ -300,7 +307,7 @@ const styles = StyleSheet.create({
   vouchersSection: {
     flex: 1,
     justifyContent: "flex-end",
-    marginBottom: 32,
+    marginBottom: 16,
   },
   vouchersScroll: {
     flexGrow: 0,
@@ -446,7 +453,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-
 
   emptyTasksContainer: {
     flex: 1,

@@ -2,12 +2,12 @@ import { FIREBASE_AUTH } from "@/FirebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 interface SignupProps {
@@ -37,7 +37,7 @@ export default function Signup({ onBackToLogin }: SignupProps) {
       const response = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       // Account created successfully - AuthManager will handle the navigation
     } catch (error: any) {
@@ -117,8 +117,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    marginHorizontal: 20,
-    width: "80%",
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 28,
