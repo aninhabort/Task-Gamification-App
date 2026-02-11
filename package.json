@@ -2,6 +2,14 @@
   "name": "task-gamification-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "expo": {
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "source-maps": false
+    }
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
