@@ -21,11 +21,14 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#25292e",
-          // Na web, sempre mostrar tabs; no mobile, ocultar quando não logado
-          display: Platform.OS === 'web' || isAuthenticated ? "flex" : "none",
+          display: Platform.OS === "web" || isAuthenticated ? "flex" : "none",
         },
         tabBarIcon: ({ color, size }) => {
-          let iconName: "home-outline" | "gift-outline" | "person-outline" | "settings-outline" = "home-outline";
+          let iconName:
+            | "home-outline"
+            | "gift-outline"
+            | "person-outline"
+            | "settings-outline" = "home-outline";
           if (route.name === "index") {
             iconName = "home-outline";
           } else if (route.name === "rewards") {

@@ -1,6 +1,6 @@
-import { FIREBASE_AUTH } from '@/FirebaseConfig';
-import { useCallback, useEffect, useState } from 'react';
-import { UserData, UserDataService } from '../services/UserDataService';
+import { FIREBASE_AUTH } from "@/FirebaseConfig";
+import { useCallback, useEffect, useState } from "react";
+import { UserData, UserDataService } from "../services/UserDataService";
 
 interface UserStats {
   tasksCompleted: number;
@@ -20,14 +20,13 @@ export const useUserStats = () => {
   // Carregar dados do usuário autenticado
   useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(async (user) => {
-      
       if (user) {
         try {
           setLoading(true);
           await UserDataService.createOrUpdateUser(user);
-          
+
           const data = await UserDataService.getUserData(user.uid);
-          
+
           if (data) {
             setUserData(data);
             setStats(data.stats);
@@ -38,11 +37,11 @@ export const useUserStats = () => {
               vouchersRedeemed: 0,
             };
             setStats(defaultStats);
-            
+
             // Criar dados padrão do usuário
             const defaultUserData: UserData = {
               uid: user.uid,
-              email: user.email || '',
+              email: user.email || "",
               ...(user.displayName && { displayName: user.displayName }),
               stats: defaultStats,
               createdAt: new Date().toISOString(),
@@ -52,7 +51,7 @@ export const useUserStats = () => {
             setUserData(defaultUserData);
           }
         } catch (error) {
-          console.error('useUserStats - Error loading user data:', error);
+          console.error("useUserStats - Error loading user data:", error);
           // Em caso de erro, tentar carregar dados locais
           await loadLocalStatsIfNeeded();
         } finally {
@@ -71,9 +70,10 @@ export const useUserStats = () => {
   // Função para carregar estatísticas locais quando não há usuário autenticado
   const loadLocalStatsIfNeeded = async () => {
     try {
-      const { LocalStorageService } = await import('../services/LocalStorageService');
-      const localUserData = await LocalStorageService.getUserData('local-user');
-      
+      const { LocalStorageService } =
+        await import("../services/LocalStorageService");
+      const localUserData = await LocalStorageService.getUserData("local-user");
+
       if (localUserData && localUserData.stats) {
         setStats(localUserData.stats);
         setUserData(localUserData);
@@ -87,7 +87,7 @@ export const useUserStats = () => {
         setUserData(null);
       }
     } catch (error) {
-      console.error('useUserStats - Error loading local stats:', error);
+      console.error("useUserStats - Error loading local stats:", error);
       setStats({
         tasksCompleted: 0,
         totalPoints: 0,
@@ -97,47 +97,46 @@ export const useUserStats = () => {
     }
   };
 
-  // Salvar estatísticas no Firestore
-    const saveStats = useCallback(async (newStats: UserStats) => {
-    
-    // Sempre salvar localmente como backup
-    try {
-      const { LocalStorageService } = await import('../services/LocalStorageService');
-      const userId = userData?.uid || 'local-user';
-      await LocalStorageService.updateUserStats(userId, newStats);
-    } catch (localError) {
-      console.error('useUserStats - Error saving local stats:', localError);
-    }
-
-    // Tentar salvar no Firebase se usuário estiver autenticado
-    if (userData) {
+  const saveStats = useCallback(
+    async (newStats: UserStats) => {
       try {
-        await UserDataService.updateUserStats(userData.uid, newStats);
-      } catch (error) {
-        console.error('useUserStats - Error saving Firebase stats:', error);
+        const { LocalStorageService } =
+          await import("../services/LocalStorageService");
+        const userId = userData?.uid || "local-user";
+        await LocalStorageService.updateUserStats(userId, newStats);
+      } catch (localError) {
+        console.error("useUserStats - Error saving local stats:", localError);
       }
-    } else {
-    }
 
-    // Sempre atualizar o estado local
-    setStats(newStats);
-  }, [userData]);
+      if (userData) {
+        try {
+          await UserDataService.updateUserStats(userData.uid, newStats);
+        } catch (error) {
+          console.error("useUserStats - Error saving Firebase stats:", error);
+        }
+      } else {
+      }
 
-  // Adicionar task completada
+      // Sempre atualizar o estado local
+      setStats(newStats);
+    },
+    [userData],
+  );
+
   const addCompletedTask = async (points: number) => {
-    
     const newStats = {
       ...stats,
       tasksCompleted: stats.tasksCompleted + 1,
       totalPoints: stats.totalPoints + points,
     };
-    
+
     await saveStats(newStats);
   };
 
-  // Resgatar voucher
-  const redeemVoucher = async (cost: number, voucherData: { voucherId: string; title: string }) => {
-    
+  const redeemVoucher = async (
+    cost: number,
+    voucherData: { voucherId: string; title: string },
+  ) => {
     const user = FIREBASE_AUTH.currentUser;
     if (!user) {
       return false;
@@ -145,8 +144,6 @@ export const useUserStats = () => {
 
     if (stats.totalPoints >= cost) {
       try {
-        
-        // Salvar voucher resgatado
         await UserDataService.redeemVoucher(user.uid, {
           voucherId: voucherData.voucherId,
           title: voucherData.title,
@@ -159,11 +156,11 @@ export const useUserStats = () => {
           totalPoints: stats.totalPoints - cost,
           vouchersRedeemed: stats.vouchersRedeemed + 1,
         };
-        
+
         await saveStats(newStats);
         return true;
       } catch (error) {
-        console.error('useUserStats - Error redeeming voucher:', error);
+        console.error("useUserStats - Error redeeming voucher:", error);
         return false;
       }
     } else {
@@ -173,24 +170,23 @@ export const useUserStats = () => {
 
   // Resetar estatísticas
   const resetStats = async () => {
-    
     const user = FIREBASE_AUTH.currentUser;
     if (user) {
       try {
         await UserDataService.resetUserData(user.uid);
-        
+
         const resetStatsData = {
           tasksCompleted: 0,
           totalPoints: 0,
           vouchersRedeemed: 0,
         };
-        
+
         setStats(resetStatsData);
         if (userData) {
           setUserData({ ...userData, stats: resetStatsData });
         }
       } catch (error) {
-        console.error('Error resetting stats:', error);
+        console.error("Error resetting stats:", error);
       }
     }
   };

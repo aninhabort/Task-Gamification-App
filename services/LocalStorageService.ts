@@ -1,15 +1,14 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RedeemedVoucher, Task, UserData } from './UserDataService';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RedeemedVoucher, Task, UserData } from "./UserDataService";
 
 export class LocalStorageService {
   private static readonly KEYS = {
-    USER_DATA: 'user_data_',
-    USER_TASKS: 'user_tasks_',
-    COMPLETED_TASKS: 'completed_tasks_',
-    REDEEMED_VOUCHERS: 'redeemed_vouchers_',
+    USER_DATA: "user_data_",
+    USER_TASKS: "user_tasks_",
+    COMPLETED_TASKS: "completed_tasks_",
+    REDEEMED_VOUCHERS: "redeemed_vouchers_",
   };
 
-  // Salvar dados do usuário localmente
   static async saveUserData(userId: string, userData: UserData): Promise<void> {
     try {
       const key = this.KEYS.USER_DATA + userId;
@@ -19,7 +18,6 @@ export class LocalStorageService {
     }
   }
 
-  // Buscar dados do usuário localmente
   static async getUserData(userId: string): Promise<UserData | null> {
     try {
       const key = this.KEYS.USER_DATA + userId;
@@ -33,7 +31,6 @@ export class LocalStorageService {
     }
   }
 
-  // Salvar tasks localmente
   static async saveUserTasks(userId: string, tasks: Task[]): Promise<void> {
     try {
       const key = this.KEYS.USER_TASKS + userId;
@@ -43,7 +40,6 @@ export class LocalStorageService {
     }
   }
 
-  // Buscar tasks localmente
   static async getUserTasks(userId: string): Promise<Task[]> {
     try {
       const key = this.KEYS.USER_TASKS + userId;
@@ -58,8 +54,10 @@ export class LocalStorageService {
     }
   }
 
-  // Adicionar task localmente
-  static async addTask(userId: string, task: Omit<Task, 'id' | 'userId' | 'createdAt'>): Promise<string> {
+  static async addTask(
+    userId: string,
+    task: Omit<Task, "id" | "userId" | "createdAt">,
+  ): Promise<string> {
     try {
       const tasks = await this.getUserTasks(userId);
       const newTask: Task = {
@@ -69,42 +67,40 @@ export class LocalStorageService {
         createdAt: new Date().toISOString(),
         completed: false,
       };
-      
-      tasks.unshift(newTask); // Adicionar no início
+
+      tasks.unshift(newTask);
       await this.saveUserTasks(userId, tasks);
-      
+
       return newTask.id;
     } catch (error) {
       throw error;
     }
   }
 
-  // Completar task localmente
   static async completeTask(userId: string, taskId: string): Promise<void> {
     try {
       const tasks = await this.getUserTasks(userId);
-      const taskToComplete = tasks.find(task => task.id === taskId);
-      
+      const taskToComplete = tasks.find((task) => task.id === taskId);
+
       if (taskToComplete) {
-        // Salvar tarefa completada no histórico
         const completedTask = {
           ...taskToComplete,
           completed: true,
-          completedAt: new Date().toISOString()
+          completedAt: new Date().toISOString(),
         };
         await this.saveCompletedTask(userId, completedTask);
       }
-      
-      // Remover da lista de tarefas ativas
-      const updatedTasks = tasks.filter(task => task.id !== taskId);
+      const updatedTasks = tasks.filter((task) => task.id !== taskId);
       await this.saveUserTasks(userId, updatedTasks);
     } catch (error) {
       throw error;
     }
   }
 
-  // Salvar tarefa completada localmente
-  static async saveCompletedTask(userId: string, completedTask: Task): Promise<void> {
+  static async saveCompletedTask(
+    userId: string,
+    completedTask: Task,
+  ): Promise<void> {
     try {
       const completedTasks = await this.getCompletedTasks(userId);
       const updatedCompletedTasks = [completedTask, ...completedTasks];
@@ -115,7 +111,6 @@ export class LocalStorageService {
     }
   }
 
-  // Buscar tarefas completadas localmente
   static async getCompletedTasks(userId: string): Promise<Task[]> {
     try {
       const key = this.KEYS.COMPLETED_TASKS + userId;
@@ -130,37 +125,41 @@ export class LocalStorageService {
       }
       return [];
     } catch (error) {
-      console.error('Error getting completed tasks from local storage:', error);
+      console.error("Error getting completed tasks from local storage:", error);
       return [];
     }
   }
 
-  // Atualizar estatísticas do usuário localmente
-  static async updateUserStats(userId: string, stats: UserData['stats']): Promise<void> {
+  static async updateUserStats(
+    userId: string,
+    stats: UserData["stats"],
+  ): Promise<void> {
     try {
       let userData = await this.getUserData(userId);
       if (!userData) {
         // Criar dados básicos do usuário se não existir
         userData = {
           uid: userId,
-          email: 'local@example.com',
+          email: "local@example.com",
           stats: { tasksCompleted: 0, totalPoints: 0, vouchersRedeemed: 0 },
           createdAt: new Date().toISOString(),
           lastLoginAt: new Date().toISOString(),
         };
       }
-      
+
       userData.stats = stats;
       userData.lastLoginAt = new Date().toISOString();
-      
+
       await this.saveUserData(userId, userData);
     } catch (error) {
       throw error;
     }
   }
 
-  // Resgatar voucher localmente
-  static async redeemVoucher(userId: string, voucher: Omit<RedeemedVoucher, 'id' | 'userId' | 'redeemedAt'>): Promise<string> {
+  static async redeemVoucher(
+    userId: string,
+    voucher: Omit<RedeemedVoucher, "id" | "userId" | "redeemedAt">,
+  ): Promise<string> {
     try {
       const vouchers = await this.getUserRedeemedVouchers(userId);
       const newVoucher: RedeemedVoucher = {
@@ -169,25 +168,27 @@ export class LocalStorageService {
         userId,
         redeemedAt: new Date().toISOString(),
       };
-      
-      vouchers.unshift(newVoucher); // Adicionar no início
+
+      vouchers.unshift(newVoucher);
       await this.saveUserRedeemedVouchers(userId, vouchers);
-      
+
       return newVoucher.id;
     } catch (error) {
       throw error;
     }
   }
 
-  // Buscar vouchers resgatados localmente
-  static async getUserRedeemedVouchers(userId: string): Promise<RedeemedVoucher[]> {
+  static async getUserRedeemedVouchers(
+    userId: string,
+  ): Promise<RedeemedVoucher[]> {
     try {
       const key = this.KEYS.REDEEMED_VOUCHERS + userId;
       const data = await AsyncStorage.getItem(key);
       if (data) {
         const vouchers = JSON.parse(data);
-        return vouchers.sort((a: RedeemedVoucher, b: RedeemedVoucher) => 
-          new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime()
+        return vouchers.sort(
+          (a: RedeemedVoucher, b: RedeemedVoucher) =>
+            new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime(),
         );
       }
       return [];
@@ -196,8 +197,10 @@ export class LocalStorageService {
     }
   }
 
-  // Salvar vouchers resgatados localmente
-  private static async saveUserRedeemedVouchers(userId: string, vouchers: RedeemedVoucher[]): Promise<void> {
+  private static async saveUserRedeemedVouchers(
+    userId: string,
+    vouchers: RedeemedVoucher[],
+  ): Promise<void> {
     try {
       const key = this.KEYS.REDEEMED_VOUCHERS + userId;
       await AsyncStorage.setItem(key, JSON.stringify(vouchers));
@@ -206,7 +209,6 @@ export class LocalStorageService {
     }
   }
 
-  // Limpar dados locais de um usuário
   static async clearUserData(userId: string): Promise<void> {
     try {
       await AsyncStorage.multiRemove([

@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 import {
-    Alert,
-    Animated,
-    Modal,
-    PanResponder,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useUserStatsContext } from "../../contexts/UserStatsContext";
 
@@ -474,8 +474,12 @@ export default function RewardScreen() {
         animationType="slide"
         onRequestClose={() => setShowAddModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+        <View
+          style={styles.modalOverlay}
+          pointerEvents="box-none"
+          accessible={false}
+        >
+          <View style={styles.modalContainer} accessible={true}>
             <Text style={styles.modalTitle}>Add New Voucher</Text>
 
             <Text style={styles.modalLabel}>Title:</Text>

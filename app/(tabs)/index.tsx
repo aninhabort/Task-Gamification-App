@@ -26,10 +26,7 @@ export default function HomeScreen() {
   const { stats, addCompletedTask, tasks, addTask, completeTask } =
     useUserStatsContext();
 
-  // Debug: log para verificar se as tasks estão sendo carregadas
   React.useEffect(() => {}, [tasks, stats]);
-
-  // Verificar estado de autenticação
   const [authUser, setAuthUser] = React.useState<any>(null);
 
   React.useEffect(() => {
@@ -99,8 +96,12 @@ export default function HomeScreen() {
         transparent={true}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View
+          style={styles.modalOverlay}
+          pointerEvents="box-none"
+          accessible={false}
+        >
+          <View style={styles.modalContent} accessible={true}>
             <Text style={styles.modalTitle}>New Task</Text>
             <TextInput
               style={styles.input}
